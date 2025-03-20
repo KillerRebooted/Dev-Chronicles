@@ -1,0 +1,24 @@
+       Date       Day         Class Type        Class Time   Subject
+                                                                    
+19-Nov-2024   Tuesday                  -                 -         -
+                      MERGE CLASS - LIVE 03:30 PM-05:00 PM     Maths
+                      MERGE CLASS - LIVE 05:10 PM-06:40 PM Chemistry
+                      MERGE CLASS - LIVE 06:50 PM-08:20 PM   Physics
+                             MERGE CLASS 11:20 AM-01:10 PM   Physics
+                                                                    
+20-Nov-2024 Wednesday                  -                 -         -
+                             MERGE CLASS 09:10 AM-11:00 AM Chemistry
+                             MERGE CLASS 11:20 AM-01:10 PM   Physics
+                                                                    
+21-Nov-2024  Thursday                  -                 -         -
+                      MERGE CLASS - LIVE 03:30 PM-05:00 PM     Maths
+                      MERGE CLASS - LIVE 05:10 PM-06:40 PM Chemistry
+                      MERGE CLASS - LIVE 06:50 PM-08:20 PM   Physics
+                             MERGE CLASS 11:20 AM-01:10 PM     Maths
+                                                                    
+22-Nov-2024    Friday                  -                 -         -
+                             MERGE CLASS 07:45 AM-09:30 AM Chemistry
+                                                                    
+23-Nov-2024  Saturday                  -                 -         -
+                             MERGE CLASS 11:20 AM-01:10 PM Chemistry
+                                                                    

@@ -1,0 +1,37 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "D:\\My Files\\Coding Files\\C\u002B\u002B\\Sets\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{1C5BBE53-88DD-4ED0-8485-0C7BDF273019}|Sets\\Sets.vcxproj|D:\\My Files\\Coding Files\\C\u002B\u002B\\Sets\\Sets\\Sets.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{1C5BBE53-88DD-4ED0-8485-0C7BDF273019}|Sets\\Sets.vcxproj|solutionrelative:Sets\\Sets.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Sets.cpp",
+              "DocumentMoniker": "D:\\My Files\\Coding Files\\C\u002B\u002B\\Sets\\Sets\\Sets.cpp",
+              "RelativeDocumentMoniker": "Sets\\Sets.cpp",
+              "ToolTip": "D:\\My Files\\Coding Files\\C\u002B\u002B\\Sets\\Sets\\Sets.cpp",
+              "RelativeToolTip": "Sets\\Sets.cpp",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAA3AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
+              "WhenOpened": "2024-04-27T11:17:12.371Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

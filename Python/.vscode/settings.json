@@ -1,0 +1,12 @@
+{
+    "python.pythonPath": "E:\\Python\\python.exe",
+    "python.testing.unittestArgs": [
+        "-v",
+        "-s",
+        "./Programs",
+        "-p",
+        "*test*.py"
+    ],
+    "python.testing.pytestEnabled": false,
+    "python.testing.unittestEnabled": true
+}

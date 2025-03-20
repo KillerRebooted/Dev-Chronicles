@@ -1,0 +1,47 @@
+1. Pirates of the Carribean Theme - https://pianoletternotes.blogspot.com/2017/10/pirates-of-caribbean-theme-song.html
+Settings:- hands="both", pitch=1, extra=-0.1
+
+2. Ali-A Intro - https://pianoletternotes.blogspot.com/2018/11/ali-fortnite-intro-song.html
+Settings:- hands="both", pitch=0, extra=0
+
+3. Bloody Mary by Lady Gaga - https://pianoletternotes.blogspot.com/2022/12/bloody-mary-by-lady-gaga-tiktok-speed.html
+Settings:- hands="both", pitch=0 or 1, extra=0
+
+4. Cocomelon Theme - https://pianoletternotes.blogspot.com/2023/04/cocomelon-intro-theme.html
+Settings:- hands="both", pitch=0, extra=0
+
+5. Crazy Frog by Axel F - https://pianoletternotes.blogspot.com/2017/10/crazy-frog-by-axel-f.html
+Settings:- hands="both", pitch=0, extra=0
+
+6. Crab Rave - https://pianoletternotes.blogspot.com/2019/07/crab-rave-by-noisestorm-hard-version.html
+Settings:- hands="LH", pitch=0, extra=0
+
+7. DANCE TILL YOU'RE DEAD - https://pianoletternotes.blogspot.com/2019/03/dance-till-youre-dead.html
+Settings:- hands="LH", pitch=0, extra=0
+
+8. Epic Sax Guy - https://pianoletternotes.blogspot.com/2017/10/epic-sax-guy-by-sergey-stepanov.html
+Settings:- hands="both", pitch=0, extra=0
+
+9. Gamecube Startup - https://pianoletternotes.blogspot.com/2018/04/gamecube-startup-theme.html
+Settings:- hands="both", pitch=0, extra=0.02
+
+10. Giga Chad Theme - https://pianoletternotes.blogspot.com/2022/12/gigachad-theme-song.html
+Settings:- hands="LH", pitch=0, extra=0
+
+11. Ao no Sumika (Jujutsu Kaisen S2 OP) - https://pianoletternotes.blogspot.com/2023/08/ao-no-sumika-jujutsu-kaisen-season-2-op_10.html
+Settings:- hands="both", pitch=0, extra=0
+
+12. (Jujutsu Kaisen ED 3) - https://pianoletternotes.blogspot.com/2023/08/akari-by-soushi-sakiyama-jujutsu-kaisen.html
+Settings:- hands="both", pitch=0, extra=0
+
+13. Avengers Main Theme - https://pianoletternotes.blogspot.com/2017/10/the-avengers-main-theme.html
+Settings:- hands="both", pitch=0, extra=0
+
+14. Scenario by iKon - https://pianoletternotes.blogspot.com/2018/07/love-scenario-by-ikon.html
+Settings:- hands="both", pitch=0, extra=0
+
+15. L's Theme - https://pianoletternotes.blogspot.com/2017/10/ls-theme-death-note.html (has some bad parts)
+Settings:- hands="both", pitch=0, extra=0
+
+16. Suzume no Tojimari - https://pianoletternotes.blogspot.com/2022/04/suzume-no-tojimari-trailer-song.html
+Settings:- hands="both", pitch=0, extra=0
