@@ -46,26 +46,20 @@ h = win.winfo_screenheight()
 pos = [15]*7
 sys.setrecursionlimit(1500)
 
-#Quit Application
-
+# Quit Application
 def quit_application(event):
+    win.destroy()
 
-    if event.keysym == "Escape":
-        win.destroy()
-
-#Quit Portfolio
-
+# Quit Portfolio
 def quit_portfolio(event, frame, buttons):
 
-    if event.keysym == "Escape":
-        frame.destroy()
-        win.unbind("<KeyPress>")
-        for btn in buttons:
-            btn.configure(state="normal")
-        win.bind("<KeyPress>", quit_application)
+    frame.destroy()
+    win.unbind("<Escape>")
+    for btn in buttons:
+        btn.configure(state="normal")
+    win.bind("<Escape>", quit_application)
 
-#Center Window Method
-
+# Center Window Method
 def center(win, screen_resolution, animation_time):
 
     x1, y1 = 0, 0
@@ -85,9 +79,9 @@ def center(win, screen_resolution, animation_time):
         sleep(0.008)
         win.update()
 
-#Login and Sign Up Functions
+# Login and Sign Up Functions
 
-#Switch Between Login and Sign Up Windows
+# Switch Between Login and Sign Up Windows
 def switch_method(button):
 
     def make_selector(x, length):
@@ -125,7 +119,7 @@ def switch_method(button):
         signup_page()
         make_selector(270, 7)
 
-#Show Password
+# Show Password
 def show_pass(inputs):
 
     show = check_var.get()
@@ -140,7 +134,7 @@ def show_pass(inputs):
     for input in inputs:
         input.configure(show=check_var.get())
 
-#Login Page
+# Login Page
 def login_page(first_time):
 
     global frame, selector, username, password, check_var, show_password, login_button
@@ -201,7 +195,7 @@ def login_page(first_time):
 
     win.bind("<Return>", lambda event: login())
 
-#Sign Up Page
+# Sign Up Page
 def signup_page():
 
     global confirm_password, signup_button, return_key_bind
@@ -229,7 +223,7 @@ def signup_page():
 
     return_key_bind = win.bind("<Return>", lambda event: sign_up())
 
-#Login Button Function
+# Login Button Function
 def login():
 
     global user, pass_notification, account
@@ -276,7 +270,7 @@ def login():
 
         frame.after(5000, pass_notification.destroy)
 
-#Signup Button Function
+# Signup Button Function
 def sign_up(username_taken = False):
     
     global pass_notification
@@ -338,7 +332,7 @@ def sign_up(username_taken = False):
 
         frame.after(5000, pass_notification.destroy)
 
-#Display Portfolio
+# Display Portfolio
 def display_portfolio(search):
 
     buttons = [widget for widget in search.winfo_children()]
@@ -346,18 +340,18 @@ def display_portfolio(search):
     for btn in buttons:
         btn.configure(state="disabled")
 
-    win.unbind("<KeyPress>")
+    win.unbind("<Escape>")
 
     portfolio_frame = ctk.CTkFrame(win)
     portfolio_frame.place(relx=0.5, rely=0.5, anchor=ctk.CENTER)
 
-    win.bind("<KeyPress>", lambda event, portfolio_frame=portfolio_frame: quit_portfolio(event, portfolio_frame, buttons))
+    win.bind("<Escape>", lambda event, portfolio_frame=portfolio_frame: quit_portfolio(event, portfolio_frame, buttons))
 
     size = h/30
 
     create_portfolio(portfolio_frame, data_loc, user, size)
 
-#Book Collection
+# Stock Collection
 def stock_collection():
     global saved_widgets
 
@@ -381,7 +375,7 @@ def stock_collection():
 
     saved_widgets = [search_bar, portfolio]
 
-#Recommendation Threads
+# Recommendation Threads
 def run_thread(search, search_term):
 
     saved_widgets[1].configure(state="disabled")
@@ -389,16 +383,18 @@ def run_thread(search, search_term):
     thread = threading.Thread(target=lambda: update_search(search, search_term))
     thread.start()
 
-#Killing Old Recommendations
+# Killing Old Recommendations
 def kill_recommendation(recommendation, search_term, search_text):
 
-    while True:
-        time.sleep(0.1)
+    def check_and_destroy():
         if search_text != search_term.get():
             recommendation.destroy()
-            return
 
-#Update Recommendations
+        win.after(100, check_and_destroy)
+
+    check_and_destroy()
+
+# Update Recommendations
 def update_search(search, search_term):
 
     search_text = search_term.get()
@@ -413,7 +409,7 @@ def update_search(search, search_term):
 
     list_of_recommendations = []
 
-    #Load Recommendations
+    # Load Recommendations
     def load_recommendation(stock):
         
         try:
@@ -456,7 +452,7 @@ def update_search(search, search_term):
     iteration = 0
     relative_y = 0.2
 
-    #Display Recommendations
+    # Display Recommendations
     try:
         for recommendation in list_of_recommendations:
 
@@ -474,7 +470,7 @@ def update_search(search, search_term):
     except:
         pass
 
-#Display Desired Stock Details
+# Display Desired Stock Details
 def get_stock(search, search_term, ticker, security_name, period="6mo"):
     global buy, sell
     
@@ -532,7 +528,7 @@ def get_stock(search, search_term, ticker, security_name, period="6mo"):
     buy.place(in_=bg, relx=0.26, rely=0.92, relheight=0.08, relwidth=0.2)
     sell.place(in_=buy, relx=1.75, rely=0, relheight=1, relwidth=1)
 
-    #Validation Command
+    # Validation Command
     def vcmd(char):
         return char.isdigit()
 
@@ -544,14 +540,14 @@ def get_stock(search, search_term, ticker, security_name, period="6mo"):
     quantity_text = ctk.CTkLabel(search, text="Quantity", font=("Helvetica", h/67.5, "bold"), justify="center")
     quantity_text.place(in_=quantity, relx=0, rely=-0.75, relheight=0.55, relwidth=1)
 
-    #Animate Graph Buttons
+    # Animate Graph Buttons
     def animate(x):
         if pos[x] >= 0:
             pos[x] -= 1
             win.update()
             win.after(20, lambda: animate(x))
 
-    #Check Hover State for Graph
+    # Check Hover State for Graph
     def check_hover(event):
         global pos
 
@@ -576,7 +572,7 @@ def get_stock(search, search_term, ticker, security_name, period="6mo"):
                 widget.place_forget()
                 pos = [15]*7
 
-    #Recursive Call to Update Graph
+    # Recursive Call to Update Graph
     def update_graph(period):
         get_stock(search, search_term, ticker, security_name, period)
 
@@ -602,7 +598,7 @@ def main():
     
     login_page(True)
 
-    win.bind("<KeyPress>", quit_application)
+    win.bind("<Escape>", quit_application)
 
     win.mainloop()
 

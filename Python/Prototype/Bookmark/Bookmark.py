@@ -10,8 +10,11 @@ import time
 from PIL import Image, ImageEnhance
 from Book_Scouter import get_book_details
 
-ctk.set_appearance_mode("system")
+ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("dark-blue")
+
+data_loc = f"{os.path.dirname(os.path.realpath(__file__))}\\Data"
+database_loc = f"{data_loc}\\Account Data Base.json"
 
 win = ctk.CTk(fg_color="#121212")
 win.title("Login")
@@ -23,8 +26,11 @@ h = win.winfo_screenheight()
 """w=1280
 h=720"""
 
-#Center Window Method
+# Quit Application
+def quit_application(event):
+    win.destroy()
 
+# Center Window Method
 def center(win, screen_resolution, animation_time):
 
     x1, y1 = 0, 0
@@ -44,8 +50,9 @@ def center(win, screen_resolution, animation_time):
         sleep(0.008)
         win.update()
 
-#Login and Sign Up Functions
+# Login and Sign Up Functions
 
+# Switch Between Login and Sign Up Windows
 def switch_method(button):
 
     def make_selector(x, length):
@@ -76,13 +83,14 @@ def switch_method(button):
     if button == "login":
 
         login_page(False)
-        make_selector(136, 6)
+        make_selector(133, 6)
 
     else:
 
         signup_page()
-        make_selector(270, 7)
+        make_selector(267, 7)
 
+# Show Password
 def show_pass(inputs):
 
     show = check_var.get()
@@ -97,13 +105,17 @@ def show_pass(inputs):
     for input in inputs:
         input.configure(show=check_var.get())
 
+# Login Page
 def login_page(first_time):
 
     global frame, selector, username, password, check_var, show_password, login_button
 
+    win.title("Login")
+
     try:
         confirm_password.destroy()
         signup_button.destroy()
+        login_button.destroy()
     except:
         try:
             login_button.destroy()
@@ -117,18 +129,18 @@ def login_page(first_time):
         frame = ctk.CTkFrame(win, fg_color="#1f1f1f")
         frame.pack(pady=20, padx=60, fill="both", expand=True)
 
-        label = ctk.CTkLabel(frame, text="BOOKMARK", text_color="#bb86fc", font=("Roboto", 24, "bold"))
+        label = ctk.CTkLabel(frame, text="BOOKMARK", text_color="#9a4cfa", font=("Helvetica", 24, "bold"))
         label.pack(pady=12, padx=10)
     
     if first_time:
 
-        selector = ctk.CTkLabel(frame, text="_____", text_color="#bb86fc", font=("Roboto", 24, "bold"))
-        selector.place(x=136, y=55)
+        selector = ctk.CTkLabel(frame, text="_____", text_color="#9a4cfa", font=("Helvetica", 24, "bold"))
+        selector.place(x=133, y=55)
 
-    login_switch_method = ctk.CTkButton(frame, text="LOGIN", text_color="#bb86fc", font=("Roboto", 16, "bold"), fg_color="#1f1f1f", hover_color="#1f1f1f", cursor="hand2", height=0, width=0, command=lambda: switch_method("login"))
+    login_switch_method = ctk.CTkButton(frame, text="LOGIN", text_color="#9a4cfa", font=("Helvetica", 16, "bold"), fg_color="#1f1f1f", hover_color="#1f1f1f", cursor="hand2", height=0, width=0, command=lambda: switch_method("login"))
     login_switch_method.place(x=136, y=50)
 
-    sign_up_switch_method = ctk.CTkButton(frame, text="SIGN UP", text_color="#bb86fc", font=("Roboto", 16, "bold"), fg_color="#1f1f1f", hover_color="#1f1f1f", cursor="hand2", height=0, width=0, command=lambda: switch_method("sign_up"))
+    sign_up_switch_method = ctk.CTkButton(frame, text="SIGN UP", text_color="#9a4cfa", font=("Helvetica", 16, "bold"), fg_color="#1f1f1f", hover_color="#1f1f1f", cursor="hand2", height=0, width=0, command=lambda: switch_method("sign_up"))
     sign_up_switch_method.place(x=270, y=50)
 
     if first_time:    
@@ -149,17 +161,22 @@ def login_page(first_time):
 
         show_password.configure(command=lambda: show_pass([password]))
 
-    login_button = ctk.CTkButton(frame, text="Login", text_color="#121212", fg_color="#bb86fc", hover_color="#5704bc", font=("Roboto", 13, "bold"), cursor="hand2", command=login)
+    login_button = ctk.CTkButton(frame, text="Login", text_color="#121212", fg_color="#9a4cfa", hover_color="#4937D2", font=("Helvetica", 13, "bold"), cursor="hand2", command=login)
     login_button.pack(pady=12, padx=10)
 
     win.bind("<Return>", lambda event: login())
 
+# Sign Up Page
 def signup_page():
 
     global confirm_password, signup_button, return_key_bind
 
+    win.title("Sign Up")
+
     try:
         login_button.destroy()
+        confirm_password.destroy()
+        signup_button.destroy()
     except:
         try:
             confirm_password.destroy()
@@ -172,11 +189,12 @@ def signup_page():
 
     show_password.configure(command=lambda: show_pass([password, confirm_password]))
 
-    signup_button = ctk.CTkButton(frame, text="Sign Up", text_color="#121212", fg_color="#bb86fc", hover_color="#5704bc", font=("Roboto", 13, "bold"), cursor="hand2", command=sign_up)
+    signup_button = ctk.CTkButton(frame, text="Sign Up", text_color="#121212", fg_color="#9a4cfa", hover_color="#4937D2", font=("Helvetica", 13, "bold"), cursor="hand2", command=sign_up)
     signup_button.pack(pady=12, padx=10)
 
     return_key_bind = win.bind("<Return>", lambda event: sign_up())
 
+# Login Button Function
 def login():
 
     global pass_notification, account
@@ -199,7 +217,7 @@ def login():
         if (user in database) and (database[user] == passw): text = "Login Successful!"; color = "green"; x = 90
         else: text = "Username or Password is incorrect."; color = "red"; x = 92
 
-        pass_notification = ctk.CTkLabel(frame, text=text, font=("Roboto", 10, "bold"), text_color=color, height=0, width=300)
+        pass_notification = ctk.CTkLabel(frame, text=text, font=("Helvetica", 10, "bold"), text_color=color, height=0, width=300)
         pass_notification.place(x=x, y=212)
 
         frame.after(5000, pass_notification.destroy)
@@ -218,11 +236,12 @@ def login():
         if username.get() == "": text = "You have a Username right?"; x = 92
         else: text = "I believe you forgot the Password"; x = 91
 
-        pass_notification = ctk.CTkLabel(frame, text=text, font=("Roboto", 10, "bold"), text_color="red", height=0, width=300)
+        pass_notification = ctk.CTkLabel(frame, text=text, font=("Helvetica", 10, "bold"), text_color="red", height=0, width=300)
         pass_notification.place(x=x, y=212)
 
         frame.after(5000, pass_notification.destroy)
 
+# Signup Button Function
 def sign_up(username_taken = False):
     
     global pass_notification
@@ -247,7 +266,7 @@ def sign_up(username_taken = False):
 
             with open(database_loc, "w+") as f: json.dump(dict, f, indent=4)
 
-            pass_notification = ctk.CTkLabel(frame, text="Registered Successfully", font=("Roboto", 10, "bold"), text_color="green", height=0, width=300)
+            pass_notification = ctk.CTkLabel(frame, text="Registered Successfully", font=("Helvetica", 10, "bold"), text_color="green", height=0, width=300)
             pass_notification.place(x=89, y=276)
 
             frame.after(5000, pass_notification.destroy)
@@ -259,7 +278,7 @@ def sign_up(username_taken = False):
 
             with open(database_loc, "w+") as f: json.dump(dict, f, indent=4)
 
-            pass_notification = ctk.CTkLabel(frame, text="Registered Successfully", font=("Roboto", 10, "bold"), text_color="green", height=0, width=300)
+            pass_notification = ctk.CTkLabel(frame, text="Registered Successfully", font=("Helvetica", 10, "bold"), text_color="green", height=0, width=300)
             pass_notification.place(x=89, y=276)
 
             frame.after(5000, pass_notification.destroy)
@@ -279,13 +298,12 @@ def sign_up(username_taken = False):
         elif password.get() != confirm_password.get(): text = "The Passwords do not Match"; x = 140
         else: text = "Username is already taken"; x = 140
 
-        pass_notification = ctk.CTkLabel(frame, text=text, font=("Roboto", 10, "bold"), text_color="red", height=0, width=200)
+        pass_notification = ctk.CTkLabel(frame, text=text, font=("Helvetica", 10, "bold"), text_color="red", height=0, width=200)
         pass_notification.place(x=x, y=276)
 
         frame.after(5000, pass_notification.destroy)
 
-#Book Collection
-        
+# Book Collection
 def book_collection():
 
     frame.destroy()
@@ -297,7 +315,7 @@ def book_collection():
     page = ctk.CTkFrame(win, fg_color="#1f1f1f")
     page.pack(pady=20, padx=60, fill="both", expand=True)
 
-    add_btn = ctk.CTkButton(page, text="+", text_color="#121212", fg_color="#bb86fc", hover_color="#5704bc", font=("Roboto", 45, "bold"), width=80, height=80, corner_radius=30, command=lambda: add_book(add_btn))
+    add_btn = ctk.CTkButton(page, text="+", text_color="#121212", fg_color="#9a4cfa", hover_color="#4937D2", font=("Helvetica", 45, "bold"), width=80, height=80, corner_radius=30, command=lambda: add_book(add_btn))
     add_btn.pack(side=ctk.BOTTOM, anchor="e", padx=8, pady=8)
 
 def add_book(add_btn):
@@ -325,11 +343,8 @@ def add_book(add_btn):
 
     search_bar = ctk.CTkEntry(search, fg_color="#1f1f1f", placeholder_text="Enter ISBN No. or Name of the Book...", textvariable=search_term)
     search_bar.place(relx=0.48, rely=0.1, relwidth=0.45, relheight=0.06, anchor=ctk.CENTER)
-    
-    search_button = ctk.CTkButton(search, fg_color="#2f2f2f", hover_color="#1f1f1f", text="", image=ctk.CTkImage(dark_image=Image.open(f"{data_loc}\\Images\\Search.png")), command=lambda: run_thread(search=search, isbn=search_bar))
-    search_button.place(in_=search_bar, relx=1.04, rely=0.5, relwidth=0.08, relheight=1, anchor=ctk.CENTER)
 
-    saved_widgets = [search_bar, search_button]
+    saved_widgets = [search_bar]
 
 def run_thread(search, search_term):
 
@@ -338,11 +353,13 @@ def run_thread(search, search_term):
 
 def kill_recommendation(recommendation, search_term, search_text):
 
-    while True:
-        time.sleep(0.1)
+    def check_and_destroy():
         if search_text != search_term.get():
             recommendation.destroy()
-            return
+
+        win.after(100, check_and_destroy)
+
+    check_and_destroy()
 
 def update_search(search, search_term):
 
@@ -426,14 +443,14 @@ def get_book(search, search_term, book):
     image = ctk.CTkLabel(search, text="", image=ctk.CTkImage(dark_image=enhanced_image, size=(search.winfo_width()/100 * 20, search.winfo_height()/100 * 50)))
     image.place(in_=bg, relx=0, rely=0, relwidth=1, relheight=1)
 
-    book_title = ctk.CTkLabel(search, text=f"Title: {book['title']}", justify="left", font=("Roboto", 16, "bold"), wraplength=search.winfo_width()-image.winfo_width()-((search.winfo_width()/100)*35))
+    book_title = ctk.CTkLabel(search, text=f"Title: {book['title']}", justify="left", font=("Helvetica", 16, "bold"), wraplength=search.winfo_width()-image.winfo_width()-((search.winfo_width()/100)*35))
     book_title.place(in_=image, relx=1.2, rely=0)
 
     order = {"authors":"Author(s)", "isbn10":"ISBN-10", "isbn13":"ISBN-13", "publisher":"Publisher", "publish_date":"Publish Date", "page_count":"Pages", "description":"Description", "maturity_rating":"Maturity Rating"}
 
     prev_widget = book_title
     for title in order:
-        widget = ctk.CTkLabel(search, text=f"{order[title]}: {book[title]}",justify="left", font=("Roboto", 16, "bold"), wraplength=search.winfo_width()-image.winfo_width()-((search.winfo_width()/100)*35))
+        widget = ctk.CTkLabel(search, text=f"{order[title]}: {book[title]}",justify="left", font=("Helvetica", 16, "bold"), wraplength=search.winfo_width()-image.winfo_width()-((search.winfo_width()/100)*35))
         widget.place(in_=prev_widget, relx=0, rely=1.2)
 
         prev_widget = widget
@@ -460,12 +477,12 @@ def get_book(search, search_term, book):
             enhanced_image = image_enhancer.enhance(1)
             image.configure(image=ctk.CTkImage(dark_image=enhanced_image, size=(search.winfo_width()/100 * 20, search.winfo_height()/100 * 50)))
 
-    book_plan = ctk.CTkButton(search, text="Plan To Read", font=("Roboto", 18, "bold"), fg_color="#1f1f1f", hover_color="#3f3f3f", corner_radius=0)
-    book_reading = ctk.CTkButton(search, text="Reading", font=("Roboto", 18, "bold"), fg_color="#1f1f1f", hover_color="#3f3f3f", corner_radius=0)
-    book_completed = ctk.CTkButton(search, text="Completed", font=("Roboto", 18, "bold"), fg_color="#1f1f1f", hover_color="#3f3f3f", corner_radius=0)
-    book_hold = ctk.CTkButton(search, text="On Hold", font=("Roboto", 18, "bold"), fg_color="#1f1f1f", hover_color="#3f3f3f", corner_radius=0)
-    book_dropped = ctk.CTkButton(search, text="Dropped", font=("Roboto", 18, "bold"), fg_color="#1f1f1f", hover_color="#3f3f3f", corner_radius=0)
-    book_remove = ctk.CTkButton(search, text="Remove From List", font=("Roboto", 18, "bold"), fg_color="#1f1f1f", hover_color="#3f3f3f", corner_radius=0)
+    book_plan = ctk.CTkButton(search, text="Plan To Read", font=("Helvetica", 18, "bold"), fg_color="#1f1f1f", hover_color="#3f3f3f", corner_radius=0)
+    book_reading = ctk.CTkButton(search, text="Reading", font=("Helvetica", 18, "bold"), fg_color="#1f1f1f", hover_color="#3f3f3f", corner_radius=0)
+    book_completed = ctk.CTkButton(search, text="Completed", font=("Helvetica", 18, "bold"), fg_color="#1f1f1f", hover_color="#3f3f3f", corner_radius=0)
+    book_hold = ctk.CTkButton(search, text="On Hold", font=("Helvetica", 18, "bold"), fg_color="#1f1f1f", hover_color="#3f3f3f", corner_radius=0)
+    book_dropped = ctk.CTkButton(search, text="Dropped", font=("Helvetica", 18, "bold"), fg_color="#1f1f1f", hover_color="#3f3f3f", corner_radius=0)
+    book_remove = ctk.CTkButton(search, text="Remove From List", font=("Helvetica", 18, "bold"), fg_color="#1f1f1f", hover_color="#3f3f3f", corner_radius=0)
 
     place_order = [book_plan, book_reading, book_completed, book_hold, book_dropped, book_remove]
 
@@ -477,11 +494,10 @@ def main():
     
     login_page(True)
 
+    win.bind("<Escape>", quit_application)
+
     win.mainloop()
 
 if __name__ == "__main__":
-
-    data_loc = f"{os.path.dirname(os.path.realpath(__file__))}\\Data"
-    database_loc = f"{data_loc}\\Account Data Base.json"
     
     main()
