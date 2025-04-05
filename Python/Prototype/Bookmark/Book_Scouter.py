@@ -36,8 +36,8 @@ def get_book_details(search):
             isbn13.append(isbn13_value)
 
         page_counts = [book["volumeInfo"].get("pageCount", "") for book in response["items"]]
-        categories = [book["volumeInfo"].get("categories", "") for book in response["items"]]
-        maturity_ratings = [book["volumeInfo"].get("maturityRating", "") for book in response["items"]]
+        categories = [", ".join(book["volumeInfo"].get("categories", "")) for book in response["items"]]
+        maturity_ratings = ["Inappropriate for certain Ages" if book["volumeInfo"].get("maturityRating", "")=="NOT_MATURE" else "Appropriate for all Ages" for book in response["items"]]
         thumbnails = [f"https://books.google.com/books/publisher/content/images/frontcover/{id}?fife=w1920-h1080&source=gbs_api" for id in ids]
 
         books = []

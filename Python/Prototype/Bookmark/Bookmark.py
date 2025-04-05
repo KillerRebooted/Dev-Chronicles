@@ -50,6 +50,7 @@ def center(win, screen_resolution, animation_time):
         sleep(0.008)
         win.update()
 
+
 # Login and Sign Up Functions
 
 # Switch Between Login and Sign Up Windows
@@ -443,17 +444,20 @@ def get_book(search, search_term, book):
     image = ctk.CTkLabel(search, text="", image=ctk.CTkImage(dark_image=enhanced_image, size=(search.winfo_width()/100 * 20, search.winfo_height()/100 * 50)))
     image.place(in_=bg, relx=0, rely=0, relwidth=1, relheight=1)
 
-    book_title = ctk.CTkLabel(search, text=f"Title: {book['title']}", justify="left", font=("Helvetica", 16, "bold"), wraplength=search.winfo_width()-image.winfo_width()-((search.winfo_width()/100)*35))
-    book_title.place(in_=image, relx=1.2, rely=0)
+    order = {"title":"Title", "authors":"Author(s)", "isbn10":"ISBN-10", "isbn13":"ISBN-13", "publisher":"Publisher", "publish_date":"Publish Date", "categories": "Categories", "page_count":"Pages", "description":"Description", "maturity_rating":"Maturity Rating"}
 
-    order = {"authors":"Author(s)", "isbn10":"ISBN-10", "isbn13":"ISBN-13", "publisher":"Publisher", "publish_date":"Publish Date", "page_count":"Pages", "description":"Description", "maturity_rating":"Maturity Rating"}
+    # Book Title
+    text = ""
 
-    prev_widget = book_title
-    for title in order:
-        widget = ctk.CTkLabel(search, text=f"{order[title]}: {book[title]}",justify="left", font=("Helvetica", 16, "bold"), wraplength=search.winfo_width()-image.winfo_width()-((search.winfo_width()/100)*35))
-        widget.place(in_=prev_widget, relx=0, rely=1.2)
+    for title in order.keys():
+        title_content = book[title]
+        if title_content != "":
+            text += f"{order[title]}: {book[title]}\n\n"
 
-        prev_widget = widget
+    text_widget = ctk.CTkTextbox(search, font=("Helvetica", h/67.5, "bold"), fg_color="#0f0f0f", wrap=ctk.WORD)
+    text_widget.insert(ctk.END, text)
+    text_widget.configure(state=ctk.DISABLED)
+    text_widget.place(in_=bg, relx=1.2, rely=0, relheight=1.5, relwidth=3.2)
 
     def check_hover(event):
         if (win.winfo_pointerx() > bg.winfo_rootx()) and (win.winfo_pointerx() < bg.winfo_rootx()+bg.winfo_width()) and (win.winfo_pointery() > bg.winfo_rooty()) and (win.winfo_pointery() < bg.winfo_rooty()+bg.winfo_height()):
