@@ -319,6 +319,7 @@ def book_collection():
     add_btn = ctk.CTkButton(page, text="+", text_color="#121212", fg_color="#9a4cfa", hover_color="#4937D2", font=("Helvetica", 45, "bold"), width=80, height=80, corner_radius=30, command=lambda: add_book(add_btn))
     add_btn.pack(side=ctk.BOTTOM, anchor="e", padx=8, pady=8)
 
+# Add New Books
 def add_book(add_btn):
     global saved_widgets, search_bar
 
@@ -347,11 +348,13 @@ def add_book(add_btn):
 
     saved_widgets = [search_bar]
 
+# Run threads to run searches
 def run_thread(search, search_term):
 
     thread = threading.Thread(target=lambda: update_search(search, search_term))
     thread.start()
 
+# Remove outdated recommendations from screen
 def kill_recommendation(recommendation, search_term, search_text):
 
     def check_and_destroy():
@@ -362,6 +365,7 @@ def kill_recommendation(recommendation, search_term, search_text):
 
     check_and_destroy()
 
+# Fetch Book Recommendations based on Search Term
 def update_search(search, search_term):
 
     search_text = search_term.get()
@@ -423,6 +427,7 @@ def update_search(search, search_term):
     except:
         pass
 
+# Fetch Book Details
 def get_book(search, search_term, book):
 
     search_term.set("")
@@ -444,21 +449,22 @@ def get_book(search, search_term, book):
     image = ctk.CTkLabel(search, text="", image=ctk.CTkImage(dark_image=enhanced_image, size=(search.winfo_width()/100 * 20, search.winfo_height()/100 * 50)))
     image.place(in_=bg, relx=0, rely=0, relwidth=1, relheight=1)
 
-    order = {"title":"Title", "authors":"Author(s)", "isbn10":"ISBN-10", "isbn13":"ISBN-13", "publisher":"Publisher", "publish_date":"Publish Date", "categories": "Categories", "page_count":"Pages", "description":"Description", "maturity_rating":"Maturity Rating"}
+    details_order = {"title":"Title", "authors":"Author(s)", "language":"Language", "isbn10":"ISBN-10", "isbn13":"ISBN-13", "publisher":"Publisher", "publish_date":"Publish Date", "categories": "Categories", "page_count":"Pages", "description":"Description", "maturity_rating":"Maturity Rating"}
 
-    # Book Title
+    # Filling Book Details
     text = ""
 
-    for title in order.keys():
-        title_content = book[title]
-        if title_content != "":
-            text += f"{order[title]}: {book[title]}\n\n"
+    for heading in details_order.keys():
+        heading_content = book[heading]
+        if heading_content != "":
+            text += f"{details_order[heading]}: {heading_content}\n\n"
 
     text_widget = ctk.CTkTextbox(search, font=("Helvetica", h/67.5, "bold"), fg_color="#0f0f0f", wrap=ctk.WORD)
     text_widget.insert(ctk.END, text)
     text_widget.configure(state=ctk.DISABLED)
     text_widget.place(in_=bg, relx=1.2, rely=0, relheight=1.5, relwidth=3.2)
 
+    # Display Buttons if hovering over the Image
     def check_hover(event):
         if (win.winfo_pointerx() > bg.winfo_rootx()) and (win.winfo_pointerx() < bg.winfo_rootx()+bg.winfo_width()) and (win.winfo_pointery() > bg.winfo_rooty()) and (win.winfo_pointery() < bg.winfo_rooty()+bg.winfo_height()):
             enhanced_image = image_enhancer.enhance(0.5)
@@ -481,6 +487,7 @@ def get_book(search, search_term, book):
             enhanced_image = image_enhancer.enhance(1)
             image.configure(image=ctk.CTkImage(dark_image=enhanced_image, size=(search.winfo_width()/100 * 20, search.winfo_height()/100 * 50)))
 
+    # Buttons Displayed on Hovering
     book_plan = ctk.CTkButton(search, text="Plan To Read", font=("Helvetica", 18, "bold"), fg_color="#1f1f1f", hover_color="#3f3f3f", corner_radius=0)
     book_reading = ctk.CTkButton(search, text="Reading", font=("Helvetica", 18, "bold"), fg_color="#1f1f1f", hover_color="#3f3f3f", corner_radius=0)
     book_completed = ctk.CTkButton(search, text="Completed", font=("Helvetica", 18, "bold"), fg_color="#1f1f1f", hover_color="#3f3f3f", corner_radius=0)
