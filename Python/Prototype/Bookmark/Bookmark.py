@@ -35,7 +35,7 @@ def center(win, screen_resolution, animation_time):
 
     x1, y1 = 0, 0
 
-    while x1 != screen_resolution[0] or y1 != screen_resolution[1]:
+    while (x1 < screen_resolution[0]) or (y1 < screen_resolution[1]):
 
         if x1 != screen_resolution[0]: x1 += screen_resolution[0]/(animation_time*10)
         if y1 != screen_resolution[1]: y1 += screen_resolution[1]/(animation_time*10)
@@ -49,6 +49,19 @@ def center(win, screen_resolution, animation_time):
 
         sleep(0.008)
         win.update()
+
+
+    x1 = screen_resolution[0]
+    y1 = screen_resolution[1]
+
+    win.geometry(f"{int(x1)}x{int(y1)}")
+
+    x2 = w//2 - win.winfo_width()//2
+    y2 = h//2 - win.winfo_height()//2
+
+    win.geometry(f"+{x2}+{y2}")
+
+    win.update()
 
 
 # Login and Sign Up Functions
@@ -162,7 +175,7 @@ def login_page(first_time):
 
         show_password.configure(command=lambda: show_pass([password]))
 
-    login_button = ctk.CTkButton(frame, text="Login", text_color="#121212", fg_color="#9a4cfa", hover_color="#4937D2", font=("Helvetica", 13, "bold"), cursor="hand2", command=login)
+    login_button = ctk.CTkButton(frame, text="Login", text_color="#121212", fg_color="#9a4cfa", hover_color="#b87bff", font=("Helvetica", 13, "bold"), cursor="hand2", command=login)
     login_button.pack(pady=12, padx=10)
 
     win.bind("<Return>", lambda event: login())
@@ -190,7 +203,7 @@ def signup_page():
 
     show_password.configure(command=lambda: show_pass([password, confirm_password]))
 
-    signup_button = ctk.CTkButton(frame, text="Sign Up", text_color="#121212", fg_color="#9a4cfa", hover_color="#4937D2", font=("Helvetica", 13, "bold"), cursor="hand2", command=sign_up)
+    signup_button = ctk.CTkButton(frame, text="Sign Up", text_color="#121212", fg_color="#9a4cfa", hover_color="#b87bff", font=("Helvetica", 13, "bold"), cursor="hand2", command=sign_up)
     signup_button.pack(pady=12, padx=10)
 
     return_key_bind = win.bind("<Return>", lambda event: sign_up())
@@ -215,7 +228,8 @@ def login():
         user = hashlib.sha256(username.get().encode()).hexdigest()
         passw = hashlib.sha256(password.get().encode()).hexdigest()
 
-        if (user in database) and (database[user] == passw): text = "Login Successful!"; color = "green"; x = 90
+        # Kind of useless (Basically useless) since App opens immediately after login
+        if (user in database) and (database[user] == passw): text = "Login Successful!"; color = "#21c065"; x = 90
         else: text = "Username or Password is incorrect."; color = "red"; x = 92
 
         pass_notification = ctk.CTkLabel(frame, text=text, font=("Helvetica", 10, "bold"), text_color=color, height=0, width=300)
@@ -267,7 +281,7 @@ def sign_up(username_taken = False):
 
             with open(database_loc, "w+") as f: json.dump(dict, f, indent=4)
 
-            pass_notification = ctk.CTkLabel(frame, text="Registered Successfully", font=("Helvetica", 10, "bold"), text_color="green", height=0, width=300)
+            pass_notification = ctk.CTkLabel(frame, text="Registered Successfully", font=("Helvetica", 10, "bold"), text_color="#21c065", height=0, width=300)
             pass_notification.place(x=89, y=276)
 
             frame.after(5000, pass_notification.destroy)
@@ -279,7 +293,7 @@ def sign_up(username_taken = False):
 
             with open(database_loc, "w+") as f: json.dump(dict, f, indent=4)
 
-            pass_notification = ctk.CTkLabel(frame, text="Registered Successfully", font=("Helvetica", 10, "bold"), text_color="green", height=0, width=300)
+            pass_notification = ctk.CTkLabel(frame, text="Registered Successfully", font=("Helvetica", 10, "bold"), text_color="#21c065", height=0, width=300)
             pass_notification.place(x=89, y=276)
 
             frame.after(5000, pass_notification.destroy)
@@ -311,47 +325,100 @@ def book_collection():
     win.unbind("<Return>")
 
     center(win, (w, h), 2)
-    win.attributes('-fullscreen', True)
+    win.attributes("-fullscreen", True)
 
-    page = ctk.CTkFrame(win, fg_color="#1f1f1f")
-    page.pack(pady=20, padx=60, fill="both", expand=True)
+    # Main App Frame
+    main_frame = ctk.CTkFrame(win, fg_color="#121212")
+    main_frame.pack(fill="both", expand=True)
 
-    add_btn = ctk.CTkButton(page, text="+", text_color="#121212", fg_color="#9a4cfa", hover_color="#4937D2", font=("Helvetica", 45, "bold"), width=80, height=80, corner_radius=30, command=lambda: add_book(add_btn))
-    add_btn.pack(side=ctk.BOTTOM, anchor="e", padx=8, pady=8)
+    # Create Tabular View
+    tabs = ctk.CTkTabview(main_frame,
+                        corner_radius=h/108,
+                        border_width=h/540,
+                        fg_color="#1f1f1f",
+                        border_color="#9a4cfa",
+                        segmented_button_fg_color="#1f1f1f",
+                        segmented_button_selected_color="#9a4cfa",
+                        segmented_button_unselected_color="#2a2a2a",
+                        segmented_button_selected_hover_color="#b87bff",
+                        segmented_button_unselected_hover_color="#393939"
+                        )
+    tabs._segmented_button.configure(font=("Segoe UI", h/45, "bold"))
+    tabs.pack(padx=w/32, pady=h/54, fill="both", expand=True)
+
+    # Add tabs
+    tabs.add("Plan To Read")
+    tabs.add("Reading")
+    tabs.add("Completed")
+    tabs.add("On Hold")
+    tabs.add("Dropped")
+
+    add_btn = ctk.CTkButton(main_frame, text="+", text_color="#121212", fg_color="#9a4cfa", bg_color="#1f1f1f", hover_color="#b87bff", font=("Helvetica", h/24, "bold"), width=w/24, height=h/13.5, corner_radius=h/36, command=lambda: add_book(add_btn))
+    add_btn.place(relx=0.919, rely=0.9)
+
+# Quit Add Book Section
+def quit_add_books(event, frame, buttons):
+
+    saved_widgets[0].configure(state="disabled")
+
+    win.unbind("<Motion>")
+    for widget in frame.winfo_children():
+        widget.destroy()
+
+    size = 0.8
+    while size >= 0.1:
+        frame.place_configure(relwidth=size, relheight=size)
+        
+        win.update()
+        sleep(0.001)
+
+        size -= 0.12
+
+    size=0.1
+    frame.place_configure(relwidth=size, relheight=size)
+
+    frame.destroy()
+    win.unbind("<Escape>")
+    for btn in buttons:
+        btn.configure(state="normal", fg_color="#9a4cfa")
+    win.bind("<Escape>", quit_application)
 
 # Add New Books
 def add_book(add_btn):
     global saved_widgets, search_bar
 
-    add_btn.configure(state="disabled", fg_color="#716876", text_color_disabled="#666666")
+    win.unbind("<Escape>")
+    add_btn.configure(state="disabled", fg_color="#3a3a3a", text_color_disabled="#777777")
 
-    search = ctk.CTkFrame(win, bg_color="#1f1f1f", fg_color="#0f0f0f", width=0.1*w, height=0.1*h, corner_radius=40)
-    search.place(relx=0.5, rely=0.5, anchor=ctk.CENTER)
+    search_frame = ctk.CTkFrame(win, bg_color="#1f1f1f", fg_color="#0f0f0f", corner_radius=h/27)
+    search_frame.place(relx=0.5, rely=0.5, relheight=0.1, relwidth=0.1, anchor=ctk.CENTER)
 
     size = 0.1
     while size <= 0.8:
-        search.configure(width=size*w, height=size*h)
+        search_frame.place_configure(relwidth=size, relheight=size)
         
         win.update()
         sleep(0.008)
 
-        size += 0.04
+        size += 0.12
 
     size=0.8
-    search.configure(width=size*w, height=size*h)
+    search_frame.place_configure(relwidth=size, relheight=size)
+
+    win.bind("<Escape>", lambda event, search_frame=search_frame: quit_add_books(event, search_frame, [add_btn]))
 
     search_term = ctk.StringVar()
-    search_term.trace_add('write', lambda var, index, mode: run_thread(search, search_term))
+    search_term.trace_add('write', lambda var, index, mode: run_thread(search_frame, search_term))
 
-    search_bar = ctk.CTkEntry(search, fg_color="#1f1f1f", placeholder_text="Enter ISBN No. or Name of the Book...", textvariable=search_term)
+    search_bar = ctk.CTkEntry(search_frame, fg_color="#1f1f1f", placeholder_text="Enter ISBN No. or Name of the Book...", textvariable=search_term)
     search_bar.place(relx=0.48, rely=0.1, relwidth=0.45, relheight=0.06, anchor=ctk.CENTER)
 
     saved_widgets = [search_bar]
 
 # Run threads to run searches
-def run_thread(search, search_term):
+def run_thread(search_frame, search_term):
 
-    thread = threading.Thread(target=lambda: update_search(search, search_term))
+    thread = threading.Thread(target=lambda: update_search(search_frame, search_term))
     thread.start()
 
 # Remove outdated recommendations from screen
@@ -366,7 +433,7 @@ def kill_recommendation(recommendation, search_term, search_text):
     check_and_destroy()
 
 # Fetch Book Recommendations based on Search Term
-def update_search(search, search_term):
+def update_search(search_frame, search_term):
 
     search_text = search_term.get()
 
@@ -386,13 +453,17 @@ def update_search(search, search_term):
 
         image = Image.open(io.BytesIO(raw_data))
         
-        recommendation = ctk.CTkButton(search, image=ctk.CTkImage(dark_image=image, size=(w/8.53, h/4.32)), fg_color="#0f0f0f", hover_color="#1f1f1f", compound=ctk.TOP, text=book["title"], width=w/8.53 + 25, height=h/4.32 + 65, command=lambda book=book: get_book(search, search_term, book))
-        recommendation._text_label.configure(wraplength=150)
-        thread = threading.Thread(target=lambda search_text=search_text: kill_recommendation(recommendation, search_term, search_text))
-        thread.start()
+        recommendation = ctk.CTkButton(search_frame, image=ctk.CTkImage(dark_image=image, size=(w/8.53, h/4.32)), fg_color="#0f0f0f", hover_color="#1f1f1f", compound=ctk.TOP, text=book["title"], width=w/8.53 + 25, height=h/4.32 + 65, command=lambda book=book: get_book(search_frame, search_term, book))
+        try:
+            recommendation._text_label.configure(wraplength=150)
+            thread = threading.Thread(target=lambda search_text=search_text: kill_recommendation(recommendation, search_term, search_text))
+            thread.start()
 
-        list_of_recommendations.append(recommendation)
-    
+            list_of_recommendations.append(recommendation)
+
+        except:
+            pass
+
     threads = []
 
     for book in recommendations:
@@ -406,7 +477,7 @@ def update_search(search, search_term):
 
     win.unbind("<Motion>")
 
-    for widget in search.winfo_children():
+    for widget in search_frame.winfo_children():
         if "ctklabel" in str(widget):
             widget.destroy()
     
@@ -417,7 +488,7 @@ def update_search(search, search_term):
         for recommendation in list_of_recommendations:
 
             if iteration % 5 == 0:
-                recommendation.place(in_=search, relx=0.03, rely=relative_y, relwidth=0.16, relheight=0.35)
+                recommendation.place(in_=search_frame, relx=0.03, rely=relative_y, relwidth=0.16, relheight=0.35)
                 relative_y = 0.6
             else:
                 recommendation.place(in_=prev_recommendation, relx=1.2, rely=0, relwidth=1, relheight=1)
@@ -428,7 +499,7 @@ def update_search(search, search_term):
         pass
 
 # Fetch Book Details
-def get_book(search, search_term, book):
+def get_book(search_frame, search_term, book):
 
     search_term.set("")
 
@@ -439,14 +510,14 @@ def get_book(search, search_term, book):
     image_enhancer = ImageEnhance.Brightness(image)
     enhanced_image = image_enhancer.enhance(1)
 
-    for widget in search.winfo_children():
+    for widget in search_frame.winfo_children():
         if widget not in saved_widgets:
             widget.destroy()
     
-    bg = ctk.CTkLabel(search, text="", fg_color="#0f0f0f")
+    bg = ctk.CTkLabel(search_frame, text="", fg_color="#0f0f0f")
     bg.place(relx=0.05, rely=0.25, relwidth=0.2, relheight=0.5)
 
-    image = ctk.CTkLabel(search, text="", image=ctk.CTkImage(dark_image=enhanced_image, size=(search.winfo_width()/100 * 20, search.winfo_height()/100 * 50)))
+    image = ctk.CTkLabel(search_frame, text="", image=ctk.CTkImage(dark_image=enhanced_image, size=(search_frame.winfo_width()/100 * 20, search_frame.winfo_height()/100 * 50)))
     image.place(in_=bg, relx=0, rely=0, relwidth=1, relheight=1)
 
     details_order = {"title":"Title", "authors":"Author(s)", "language":"Language", "isbn10":"ISBN-10", "isbn13":"ISBN-13", "publisher":"Publisher", "publish_date":"Publish Date", "categories": "Categories", "page_count":"Pages", "description":"Description", "maturity_rating":"Maturity Rating"}
@@ -459,7 +530,7 @@ def get_book(search, search_term, book):
         if heading_content != "":
             text += f"{details_order[heading]}: {heading_content}\n\n"
 
-    text_widget = ctk.CTkTextbox(search, font=("Helvetica", h/67.5, "bold"), fg_color="#0f0f0f", wrap=ctk.WORD)
+    text_widget = ctk.CTkTextbox(search_frame, font=("Helvetica", h/67.5, "bold"), fg_color="#0f0f0f", wrap=ctk.WORD)
     text_widget.insert(ctk.END, text)
     text_widget.configure(state=ctk.DISABLED)
     text_widget.place(in_=bg, relx=1.2, rely=0, relheight=1.5, relwidth=3.2)
@@ -468,7 +539,7 @@ def get_book(search, search_term, book):
     def check_hover(event):
         if (win.winfo_pointerx() > bg.winfo_rootx()) and (win.winfo_pointerx() < bg.winfo_rootx()+bg.winfo_width()) and (win.winfo_pointery() > bg.winfo_rooty()) and (win.winfo_pointery() < bg.winfo_rooty()+bg.winfo_height()):
             enhanced_image = image_enhancer.enhance(0.5)
-            image.configure(image=ctk.CTkImage(dark_image=enhanced_image, size=(search.winfo_width()/100 * 20, search.winfo_height()/100 * 50)))
+            image.configure(image=ctk.CTkImage(dark_image=enhanced_image, size=(search_frame.winfo_width()/100 * 20, search_frame.winfo_height()/100 * 50)))
 
             new_properties = False
 
@@ -485,15 +556,15 @@ def get_book(search, search_term, book):
                 widget.place_forget()
             
             enhanced_image = image_enhancer.enhance(1)
-            image.configure(image=ctk.CTkImage(dark_image=enhanced_image, size=(search.winfo_width()/100 * 20, search.winfo_height()/100 * 50)))
+            image.configure(image=ctk.CTkImage(dark_image=enhanced_image, size=(search_frame.winfo_width()/100 * 20, search_frame.winfo_height()/100 * 50)))
 
     # Buttons Displayed on Hovering
-    book_plan = ctk.CTkButton(search, text="Plan To Read", font=("Helvetica", 18, "bold"), fg_color="#1f1f1f", hover_color="#3f3f3f", corner_radius=0)
-    book_reading = ctk.CTkButton(search, text="Reading", font=("Helvetica", 18, "bold"), fg_color="#1f1f1f", hover_color="#3f3f3f", corner_radius=0)
-    book_completed = ctk.CTkButton(search, text="Completed", font=("Helvetica", 18, "bold"), fg_color="#1f1f1f", hover_color="#3f3f3f", corner_radius=0)
-    book_hold = ctk.CTkButton(search, text="On Hold", font=("Helvetica", 18, "bold"), fg_color="#1f1f1f", hover_color="#3f3f3f", corner_radius=0)
-    book_dropped = ctk.CTkButton(search, text="Dropped", font=("Helvetica", 18, "bold"), fg_color="#1f1f1f", hover_color="#3f3f3f", corner_radius=0)
-    book_remove = ctk.CTkButton(search, text="Remove From List", font=("Helvetica", 18, "bold"), fg_color="#1f1f1f", hover_color="#3f3f3f", corner_radius=0)
+    book_plan = ctk.CTkButton(search_frame, text="Plan To Read", font=("Helvetica", h/60, "bold"), fg_color="#1f1f1f", hover_color="#3f3f3f", corner_radius=0)
+    book_reading = ctk.CTkButton(search_frame, text="Reading", font=("Helvetica", h/60, "bold"), fg_color="#1f1f1f", hover_color="#3f3f3f", corner_radius=0)
+    book_completed = ctk.CTkButton(search_frame, text="Completed", font=("Helvetica", h/60, "bold"), fg_color="#1f1f1f", hover_color="#3f3f3f", corner_radius=0)
+    book_hold = ctk.CTkButton(search_frame, text="On Hold", font=("Helvetica", h/60, "bold"), fg_color="#1f1f1f", hover_color="#3f3f3f", corner_radius=0)
+    book_dropped = ctk.CTkButton(search_frame, text="Dropped", font=("Helvetica", h/60, "bold"), fg_color="#1f1f1f", hover_color="#3f3f3f", corner_radius=0)
+    book_remove = ctk.CTkButton(search_frame, text="Remove From List", font=("Helvetica", h/60, "bold"), fg_color="#1f1f1f", hover_color="#3f3f3f", corner_radius=0)
 
     place_order = [book_plan, book_reading, book_completed, book_hold, book_dropped, book_remove]
 
