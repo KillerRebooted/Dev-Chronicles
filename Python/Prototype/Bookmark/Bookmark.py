@@ -9,12 +9,13 @@ import threading
 import time
 from PIL import Image, ImageEnhance
 from Book_Scouter import get_book_details
+from Book_Data import track_book
 
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("dark-blue")
 
-data_loc = f"{os.path.dirname(os.path.realpath(__file__))}\\Data"
-database_loc = f"{data_loc}\\Account Data Base.json"
+data_loc = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Data")
+database_loc = os.path.join(data_loc, "Account Data Base.json")
 
 win = ctk.CTk(fg_color="#121212")
 win.title("Login")
@@ -111,10 +112,10 @@ def show_pass(inputs):
 
     if show == "*":
         check_var.set("")
-        show_password.configure(image=ctk.CTkImage(dark_image=Image.open(f"{data_loc}\\Images\\Eye Show.png"), size=(30,30)))
+        show_password.configure(image=ctk.CTkImage(dark_image=Image.open(os.path.join(data_loc, "Images", "Eye Show.png")), size=(30,30)))
     else:
         check_var.set("*")
-        show_password.configure(image=ctk.CTkImage(dark_image=Image.open(f"{data_loc}\\Images\\Eye Hide.png"), size=(30,30)))
+        show_password.configure(image=ctk.CTkImage(dark_image=Image.open(os.path.join(data_loc, "Images", "Eye Hide.png")), size=(30,30)))
 
     for input in inputs:
         input.configure(show=check_var.get())
@@ -168,7 +169,7 @@ def login_page(first_time):
         password = ctk.CTkEntry(frame, placeholder_text="Password", fg_color="#1f1f1f", show="*", height=40, width=200)
         password.pack(pady=12, padx=10)
 
-        show_password = ctk.CTkButton(frame, text="", fg_color="#1f1f1f", hover_color="#191919", image=ctk.CTkImage(dark_image=Image.open(f"{data_loc}\\Images\\Eye Hide.png"), size=(30,30)), width=30, height=30, command=lambda: show_pass([password]))
+        show_password = ctk.CTkButton(frame, text="", fg_color="#1f1f1f", hover_color="#191919", image=ctk.CTkImage(dark_image=Image.open(os.path.join(data_loc, "Images", "Eye Hide.png")), size=(30,30)), width=30, height=30, command=lambda: show_pass([password]))
         show_password.place(x=345, y=168)
 
     else:
@@ -211,7 +212,7 @@ def signup_page():
 # Login Button Function
 def login():
 
-    global pass_notification, account
+    global pass_notification, account_loc
 
     try:
 
@@ -225,12 +226,12 @@ def login():
 
     if (username.get() != "") and (password.get() != ""):
 
-        user = hashlib.sha256(username.get().encode()).hexdigest()
+        user = username.get()
         passw = hashlib.sha256(password.get().encode()).hexdigest()
 
         # Kind of useless (Basically useless) since App opens immediately after login
         if (user in database) and (database[user] == passw): text = "Login Successful!"; color = "#21c065"; x = 90
-        else: text = "Username or Password is incorrect."; color = "red"; x = 92
+        else: text = "Username or Password is Incorrect."; color = "red"; x = 92
 
         pass_notification = ctk.CTkLabel(frame, text=text, font=("Helvetica", 10, "bold"), text_color=color, height=0, width=300)
         pass_notification.place(x=x, y=212)
@@ -238,11 +239,9 @@ def login():
         frame.after(5000, pass_notification.destroy)
 
         if text == "Login Successful!":
-            path = f"{data_loc}\\Accounts\\{user}"
+            account_loc = os.path.join(data_loc, "Accounts", user)
             
-            os.makedirs(path, exist_ok=True)
-
-            account = path
+            os.makedirs(account_loc, exist_ok=True)
             
             book_collection()
 
@@ -263,7 +262,7 @@ def sign_up(username_taken = False):
     
     if (password.get() == confirm_password.get()) and (password.get() != "" and confirm_password.get() != "" and username.get() != "") and (not username_taken):
 
-        user = hashlib.sha256(username.get().encode()).hexdigest()
+        user = username.get()
         passw = hashlib.sha256(password.get().encode()).hexdigest()
 
         if not os.path.exists(database_loc): 
@@ -533,7 +532,7 @@ def get_book(search_frame, search_term, book):
     text_widget = ctk.CTkTextbox(search_frame, font=("Helvetica", h/67.5, "bold"), fg_color="#0f0f0f", wrap=ctk.WORD)
     text_widget.insert(ctk.END, text)
     text_widget.configure(state=ctk.DISABLED)
-    text_widget.place(in_=bg, relx=1.2, rely=0, relheight=1.5, relwidth=3.2)
+    text_widget.place(in_=bg, relx=1.2, rely=0, relheight=1.4, relwidth=3.2)
 
     # Display Buttons if hovering over the Image
     def check_hover(event):
@@ -558,15 +557,35 @@ def get_book(search_frame, search_term, book):
             enhanced_image = image_enhancer.enhance(1)
             image.configure(image=ctk.CTkImage(dark_image=enhanced_image, size=(search_frame.winfo_width()/100 * 20, search_frame.winfo_height()/100 * 50)))
 
-    # Buttons Displayed on Hovering
-    book_plan = ctk.CTkButton(search_frame, text="Plan To Read", font=("Helvetica", h/60, "bold"), fg_color="#1f1f1f", hover_color="#3f3f3f", corner_radius=0)
-    book_reading = ctk.CTkButton(search_frame, text="Reading", font=("Helvetica", h/60, "bold"), fg_color="#1f1f1f", hover_color="#3f3f3f", corner_radius=0)
-    book_completed = ctk.CTkButton(search_frame, text="Completed", font=("Helvetica", h/60, "bold"), fg_color="#1f1f1f", hover_color="#3f3f3f", corner_radius=0)
-    book_hold = ctk.CTkButton(search_frame, text="On Hold", font=("Helvetica", h/60, "bold"), fg_color="#1f1f1f", hover_color="#3f3f3f", corner_radius=0)
-    book_dropped = ctk.CTkButton(search_frame, text="Dropped", font=("Helvetica", h/60, "bold"), fg_color="#1f1f1f", hover_color="#3f3f3f", corner_radius=0)
-    book_remove = ctk.CTkButton(search_frame, text="Remove From List", font=("Helvetica", h/60, "bold"), fg_color="#1f1f1f", hover_color="#3f3f3f", corner_radius=0)
+    # Perform Actions based on Button Pressed
+    def button_action(btn, var):
+        
+        btn.configure(state="disabled")
+        
+        btn_text = var.get()
+        track_book(account_loc, book, btn_text)
 
-    place_order = [book_plan, book_reading, book_completed, book_hold, book_dropped, book_remove]
+        var.set("✔")
+        win.after(500, lambda: var.set(btn_text))
+
+        win.after(500, lambda: btn.configure(state="normal"))
+
+    # Buttons Displayed on Hovering and Add Book to SQL Database
+    book_plan_var = ctk.StringVar(value="Plan to Read")
+    book_reading_var = ctk.StringVar(value="Reading")
+    book_completed_var = ctk.StringVar(value="Completed")
+    book_hold_var = ctk.StringVar(value="On Hold")
+    book_dropped_var = ctk.StringVar(value="Dropped")
+    book_remove_var = ctk.StringVar(value="Remove From List")
+
+    book_plan_btn = ctk.CTkButton(search_frame, textvariable=book_plan_var, font=("Helvetica", h/60, "bold"), fg_color="#1f1f1f", hover_color="#3f3f3f", corner_radius=0, command=lambda: button_action(book_plan_btn, book_plan_var))
+    book_reading_btn = ctk.CTkButton(search_frame, textvariable=book_reading_var, font=("Helvetica", h/60, "bold"), fg_color="#1f1f1f", hover_color="#3f3f3f", corner_radius=0, command=lambda: button_action(book_reading_btn, book_reading_var))
+    book_completed_btn = ctk.CTkButton(search_frame, textvariable=book_completed_var, font=("Helvetica", h/60, "bold"), fg_color="#1f1f1f", hover_color="#3f3f3f", corner_radius=0, command=lambda: button_action(book_completed_btn, book_completed_var))
+    book_hold_btn = ctk.CTkButton(search_frame, textvariable=book_hold_var, font=("Helvetica", h/60, "bold"), fg_color="#1f1f1f", hover_color="#3f3f3f", corner_radius=0, command=lambda: button_action(book_hold_btn, book_hold_var))
+    book_dropped_btn = ctk.CTkButton(search_frame, textvariable=book_dropped_var, font=("Helvetica", h/60, "bold"), fg_color="#1f1f1f", hover_color="#3f3f3f", corner_radius=0, command=lambda: button_action(book_dropped_btn, book_dropped_var))
+    book_remove_btn = ctk.CTkButton(search_frame, textvariable=book_remove_var, font=("Helvetica", h/60, "bold"), fg_color="#1f1f1f", hover_color="#3f3f3f", corner_radius=0, command=lambda: button_action(book_remove_btn, book_remove_var))
+
+    place_order = [book_plan_btn, book_reading_btn, book_completed_btn, book_hold_btn, book_dropped_btn, book_remove_btn]
 
     win.bind("<Motion>", check_hover)
 
