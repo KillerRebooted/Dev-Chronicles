@@ -342,7 +342,7 @@ def book_collection():
                         segmented_button_selected_hover_color="#b87bff",
                         segmented_button_unselected_hover_color="#393939"
                         )
-    tabs._segmented_button.configure(font=("Segoe UI", h/45, "bold"))
+    tabs._segmented_button.configure(font=("Helvetica", h/45, "bold"))
     tabs.pack(padx=w/32, pady=h/54, fill="both", expand=True)
 
     # Add tabs
@@ -352,11 +352,38 @@ def book_collection():
     tabs.add("On Hold")
     tabs.add("Dropped")
 
-    add_btn = ctk.CTkButton(main_frame, text="+", text_color="#121212", fg_color="#9a4cfa", bg_color="#1f1f1f", hover_color="#b87bff", font=("Helvetica", h/24, "bold"), width=w/24, height=h/13.5, corner_radius=h/36, command=lambda: add_book(add_btn))
+    all_tabs = ["Plan To Read", "Reading", "Completed", "On Hold", "Dropped"]
+
+    # Setting Up default Page Count and Total Pages for each tab
+    page_counters = {tab_name:ctk.StringVar(value="1") for tab_name in all_tabs}
+    total_pages = {tab_name:ctk.StringVar(value="1000") for tab_name in all_tabs}
+
+    # Add Previous/Next Buttons and Page Counter
+    for tab in all_tabs:
+        previous_button = ctk.CTkButton(tabs.tab(tab), text="◀", fg_color="#9a4cfa", bg_color="#1f1f1f", hover_color="#b87bff", font=("Helvetica", h/36, "bold"), text_color="#121212")
+        previous_button.place(relx=0.4218, rely=0.95, relwidth=0.02)
+
+        page_text_info = ctk.CTkLabel(tabs.tab(tab), text="Page          of ", font=("Helvetica", h/50), text_color="#9a4cfa")
+        page_text_info.place(in_=previous_button, relx=1.4, rely=0.2)
+
+        page_counter = ctk.CTkLabel(tabs.tab(tab), textvariable=page_counters[tab], font=("Helvetica", h/50), text_color="#9a4cfa")
+        page_counter.place(in_=page_text_info, relx=0.38, rely=0, relwidth=0.4, relheight=1)
+
+        total_pages_counter = ctk.CTkLabel(tabs.tab(tab), textvariable=total_pages[tab], font=("Helvetica", h/50), text_color="#9a4cfa")
+        total_pages_counter.place(in_=page_text_info, relx=1, rely=0, relwidth=0.4, relheight=1)
+
+        next_button = ctk.CTkButton(tabs.tab(tab), text="▶", fg_color="#9a4cfa", bg_color="#1f1f1f", hover_color="#b87bff", font=("Helvetica", h/36, "bold"), text_color="#121212")
+        next_button.place(in_=previous_button, relx=7, rely=0, relwidth=1, relheight=1)
+    
+    # Set Default Tab to Reading
+    tabs.set("Reading")
+
+    # Button to open Search for Adding or Removing Books
+    add_btn = ctk.CTkButton(main_frame, text="+", text_color="#121212", fg_color="#9a4cfa", bg_color="#1f1f1f", hover_color="#b87bff", font=("Helvetica", h/24, "bold"), width=w/24, height=h/13.5, corner_radius=h/36, command=lambda: add_book([tabs, add_btn]))
     add_btn.place(relx=0.919, rely=0.9)
 
 # Quit Add Book Section
-def quit_add_books(event, frame, buttons):
+def quit_add_books(event, frame, widgets):
 
     saved_widgets[0].configure(state="disabled")
 
@@ -378,16 +405,27 @@ def quit_add_books(event, frame, buttons):
 
     frame.destroy()
     win.unbind("<Escape>")
-    for btn in buttons:
-        btn.configure(state="normal", fg_color="#9a4cfa")
+
+    # Enabling Widgets on closing Search Window
+    widgets[0].configure(state="normal")
+    widgets[1].configure(state="normal", fg_color="#9a4cfa")
+    for widget in widgets[0].tab(widgets[0].get()).winfo_children():
+        if "label" not in str(widget):
+            widget.configure(state="normal", fg_color="#9a4cfa")
     win.bind("<Escape>", quit_application)
 
 # Add New Books
-def add_book(add_btn):
+def add_book(widgets):
     global saved_widgets, search_bar
 
     win.unbind("<Escape>")
-    add_btn.configure(state="disabled", fg_color="#3a3a3a", text_color_disabled="#777777")
+
+    # Disabling Widgets to avoid complications
+    widgets[0].configure(state="disabled")
+    widgets[1].configure(state="disabled", fg_color="#3a3a3a", text_color_disabled="#777777")
+    for widget in widgets[0].tab(widgets[0].get()).winfo_children():
+        if "label" not in str(widget):
+            widget.configure(state="disabled", fg_color="#3a3a3a", text_color_disabled="#777777")
 
     search_frame = ctk.CTkFrame(win, bg_color="#1f1f1f", fg_color="#0f0f0f", corner_radius=h/27)
     search_frame.place(relx=0.5, rely=0.5, relheight=0.1, relwidth=0.1, anchor=ctk.CENTER)
@@ -404,11 +442,12 @@ def add_book(add_btn):
     size=0.8
     search_frame.place_configure(relwidth=size, relheight=size)
 
-    win.bind("<Escape>", lambda event, search_frame=search_frame: quit_add_books(event, search_frame, [add_btn]))
+    win.bind("<Escape>", lambda event, search_frame=search_frame: quit_add_books(event, search_frame, widgets))
 
     search_term = ctk.StringVar()
     search_term.trace_add('write', lambda var, index, mode: run_thread(search_frame, search_term))
 
+    # Search Bar has no Placeholder Text since Textvariable used, a bug in CustomTkinter
     search_bar = ctk.CTkEntry(search_frame, fg_color="#1f1f1f", placeholder_text="Enter ISBN No. or Name of the Book...", textvariable=search_term)
     search_bar.place(relx=0.48, rely=0.1, relwidth=0.45, relheight=0.06, anchor=ctk.CENTER)
 

@@ -3,11 +3,8 @@ import os
 
 def track_book(account_loc, book, status):
 
-    # Get Username from Account Folder Path
-    user = os.path.basename(account_loc)
-
     # Connect to or create a database file
-    conn = sqlite3.connect(os.path.join(account_loc, f"{user}.db"))
+    conn = sqlite3.connect(os.path.join(account_loc, f"User.db"))
     cursor = conn.cursor()
 
     # Create Table
@@ -46,3 +43,22 @@ def track_book(account_loc, book, status):
 
     conn.commit()
     conn.close()
+
+def read_data(account_loc, category, page_num):
+
+    # Connect to User.db
+    conn = sqlite3.connect(os.path.join(account_loc, "User.db"))
+    cursor = conn.cursor()
+
+    # Calculate indices to be extracted based on page number
+    limit = 5 # Number of Entries per page
+    offset = (page_num-1)*limit
+
+    # Request and Retrieve data from Sqlite3 database
+    cursor.execute(f"SELECT * FROM User_Data WHERE status='{category}' LIMIT {limit} OFFSET {offset}")
+    retrieved_data = cursor.fetchall()
+
+    return retrieved_data
+
+if __name__ == "__main__":
+    read_data(r"D:\Coding Files\Python\Prototype\Bookmark\Data\Accounts\a", "Completed", 2)
