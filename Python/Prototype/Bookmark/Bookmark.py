@@ -9,7 +9,7 @@ import threading
 import time
 from PIL import Image, ImageEnhance
 from Book_Scouter import get_book_details
-from Book_Data import track_book
+from Book_Data import track_book, read_data, get_total_pages
 
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("dark-blue")
@@ -330,6 +330,39 @@ def book_collection():
     main_frame = ctk.CTkFrame(win, fg_color="#121212")
     main_frame.pack(fill="both", expand=True)
 
+    # Add/Update Buttons to Tab
+    def update_tab():
+        category = tabs.get()
+
+        for widget in tabs.tab(category).winfo_children():
+            if ("button" in str(widget)) and (widget.cget("text") not in ["◀", "▶"]):
+                widget.destroy()
+
+        books = read_data(account_loc, category, int(page_counters[category].get()))
+
+        for book_num in range(len(books.get("id", ""))):
+
+            image = Image.open(io.BytesIO(books["thumbnail"][book_num]))
+
+            btn = ctk.CTkButton(tabs.tab(category), text=books["title"][book_num], fg_color="#1f1f1f", hover_color="#9a4cfa", border_color="#9a4cfa", border_width=2, image=ctk.CTkImage(dark_image=image, size=(100, 75)), compound=ctk.LEFT, anchor="w")
+            btn.pack(anchor="center", fill="x", padx=10, pady=10)
+
+            total_pages[category].set(str(get_total_pages(account_loc, category)))
+
+            win.update()
+
+    # Page Change
+    def page_change(change_qty):
+        category = tabs.get()
+
+        page_var = page_counters[category]
+        new_page_count = int(page_var.get()) + change_qty
+
+        if not ((new_page_count == 0) or (new_page_count > int(total_pages[category].get()))):
+            page_var.set(new_page_count)
+
+        update_tab()
+
     # Create Tabular View
     tabs = ctk.CTkTabview(main_frame,
                         corner_radius=h/108,
@@ -340,8 +373,8 @@ def book_collection():
                         segmented_button_selected_color="#9a4cfa",
                         segmented_button_unselected_color="#2a2a2a",
                         segmented_button_selected_hover_color="#b87bff",
-                        segmented_button_unselected_hover_color="#393939"
-                        )
+                        segmented_button_unselected_hover_color="#393939",
+                        command=update_tab)
     tabs._segmented_button.configure(font=("Helvetica", h/45, "bold"))
     tabs.pack(padx=w/32, pady=h/54, fill="both", expand=True)
 
@@ -356,11 +389,11 @@ def book_collection():
 
     # Setting Up default Page Count and Total Pages for each tab
     page_counters = {tab_name:ctk.StringVar(value="1") for tab_name in all_tabs}
-    total_pages = {tab_name:ctk.StringVar(value="1000") for tab_name in all_tabs}
+    total_pages = {tab_name:ctk.StringVar(value="1") for tab_name in all_tabs}
 
     # Add Previous/Next Buttons and Page Counter
     for tab in all_tabs:
-        previous_button = ctk.CTkButton(tabs.tab(tab), text="◀", fg_color="#9a4cfa", bg_color="#1f1f1f", hover_color="#b87bff", font=("Helvetica", h/36, "bold"), text_color="#121212")
+        previous_button = ctk.CTkButton(tabs.tab(tab), text="◀", fg_color="#9a4cfa", bg_color="#1f1f1f", hover_color="#b87bff", font=("Helvetica", h/36, "bold"), text_color="#121212", command=lambda: page_change(-1))
         previous_button.place(relx=0.4218, rely=0.95, relwidth=0.02)
 
         page_text_info = ctk.CTkLabel(tabs.tab(tab), text="Page          of ", font=("Helvetica", h/50), text_color="#9a4cfa")
@@ -372,15 +405,19 @@ def book_collection():
         total_pages_counter = ctk.CTkLabel(tabs.tab(tab), textvariable=total_pages[tab], font=("Helvetica", h/50), text_color="#9a4cfa")
         total_pages_counter.place(in_=page_text_info, relx=1, rely=0, relwidth=0.4, relheight=1)
 
-        next_button = ctk.CTkButton(tabs.tab(tab), text="▶", fg_color="#9a4cfa", bg_color="#1f1f1f", hover_color="#b87bff", font=("Helvetica", h/36, "bold"), text_color="#121212")
+        next_button = ctk.CTkButton(tabs.tab(tab), text="▶", fg_color="#9a4cfa", bg_color="#1f1f1f", hover_color="#b87bff", font=("Helvetica", h/36, "bold"), text_color="#121212", command=lambda: page_change(1))
         next_button.place(in_=previous_button, relx=7, rely=0, relwidth=1, relheight=1)
-    
+
     # Set Default Tab to Reading
     tabs.set("Reading")
 
     # Button to open Search for Adding or Removing Books
     add_btn = ctk.CTkButton(main_frame, text="+", text_color="#121212", fg_color="#9a4cfa", bg_color="#1f1f1f", hover_color="#b87bff", font=("Helvetica", h/24, "bold"), width=w/24, height=h/13.5, corner_radius=h/36, command=lambda: add_book([tabs, add_btn]))
     add_btn.place(relx=0.919, rely=0.9)
+
+    win.update()
+
+    update_tab()
 
 # Quit Add Book Section
 def quit_add_books(event, frame, widgets):
@@ -600,6 +637,8 @@ def get_book(search_frame, search_term, book):
     def button_action(btn, var):
         
         btn.configure(state="disabled")
+
+        book["thumbnail"] = raw_data
         
         btn_text = var.get()
         track_book(account_loc, book, btn_text)
@@ -610,7 +649,7 @@ def get_book(search_frame, search_term, book):
         win.after(500, lambda: btn.configure(state="normal"))
 
     # Buttons Displayed on Hovering and Add Book to SQL Database
-    book_plan_var = ctk.StringVar(value="Plan to Read")
+    book_plan_var = ctk.StringVar(value="Plan To Read")
     book_reading_var = ctk.StringVar(value="Reading")
     book_completed_var = ctk.StringVar(value="Completed")
     book_hold_var = ctk.StringVar(value="On Hold")
