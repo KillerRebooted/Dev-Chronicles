@@ -7,7 +7,7 @@ import io
 import urllib.request
 import threading
 import time
-from PIL import Image, ImageEnhance
+from PIL import Image, ImageEnhance, ImageDraw
 from Book_Scouter import get_book_details
 from Book_Data import track_book, read_data, get_total_pages
 
@@ -23,13 +23,6 @@ win.geometry("0x0")
 
 w = win.winfo_screenwidth()
 h = win.winfo_screenheight()
-
-"""w=1280
-h=720"""
-
-# Quit Application
-def quit_application(event):
-    win.destroy()
 
 # Center Window Method
 def center(win, screen_resolution, animation_time):
@@ -65,7 +58,7 @@ def center(win, screen_resolution, animation_time):
     win.update()
 
 
-# Login and Sign Up Functions
+# -------------- Login and Sign Up Functions --------------
 
 # Switch Between Login and Sign Up Windows
 def switch_method(button):
@@ -317,6 +310,69 @@ def sign_up(username_taken = False):
 
         frame.after(5000, pass_notification.destroy)
 
+
+# -------------- Main App Functions --------------
+
+# --> Quit Functions
+
+# Quit Application
+def quit_application(event):
+    win.destroy()
+
+# Quit Add Book Section
+def quit_add_books(event, frame, widgets):
+
+    saved_widgets[0].configure(state="disabled")
+
+    win.unbind("<Motion>")
+    for widget in frame.winfo_children():
+        widget.destroy()
+
+    size = 0.8
+    while size >= 0.1:
+        frame.place_configure(relwidth=size, relheight=size)
+        
+        win.update()
+        sleep(0.001)
+
+        size -= 0.12
+
+    size=0.1
+    frame.place_configure(relwidth=size, relheight=size)
+
+    frame.destroy()
+    win.unbind("<Escape>")
+
+    # Enabling Widgets on closing Search Window
+    widgets[0].configure(state="normal")
+    widgets[1].configure(state="normal", fg_color="#9a4cfa")
+    for widget in widgets[0].tab(widgets[0].get()).winfo_children():
+        if ("label" not in str(widget)) and (widget.cget("text") in ["◀", "▶"]):
+            widget.configure(state="normal", fg_color="#9a4cfa")
+        else:
+            widget.configure(state="normal")
+    win.bind("<Escape>", quit_application)
+
+# --> Other Functions
+
+# Create Rounded Corners for a given Image
+def create_rounded_image(image_path, radius):
+    img = Image.open(image_path).convert("RGBA")
+    circle = Image.new('L', (radius * 2, radius * 2), 0)
+    draw = ImageDraw.Draw(circle)
+    draw.ellipse((0, 0, radius * 2, radius * 2), fill=255)
+
+    alpha = Image.new('L', img.size, 255)
+    w, h = img.size
+
+    alpha.paste(circle.crop((0, 0, radius, radius)), (0, 0))
+    alpha.paste(circle.crop((0, radius, radius, radius * 2)), (0, h - radius))
+    alpha.paste(circle.crop((radius, 0, radius * 2, radius)), (w - radius, 0))
+    alpha.paste(circle.crop((radius, radius, radius * 2, radius * 2)), (w - radius, h - radius))
+
+    img.putalpha(alpha)
+    return img
+
 # Book Collection
 def book_collection():
 
@@ -342,12 +398,18 @@ def book_collection():
 
         for book_num in range(len(books.get("id", ""))):
 
-            image = Image.open(io.BytesIO(books["thumbnail"][book_num]))
+            image = create_rounded_image(io.BytesIO(books["thumbnail"][book_num]), 35)
 
-            btn = ctk.CTkButton(tabs.tab(category), text=books["title"][book_num], fg_color="#1f1f1f", hover_color="#9a4cfa", border_color="#9a4cfa", border_width=2, image=ctk.CTkImage(dark_image=image, size=(100, 75)), compound=ctk.LEFT, anchor="w")
-            btn.pack(anchor="center", fill="x", padx=10, pady=10)
+            btn = ctk.CTkButton(tabs.tab(category), text=books["title"][book_num], fg_color="#1f1f1f", hover_color="#9a4cfa", border_color="#9a4cfa", border_width=2, image=ctk.CTkImage(dark_image=image, size=(150, 125)), compound=ctk.LEFT, anchor="w", corner_radius=15)
+            
+            if book_num == 0:
+                btn.place(relx=0.02, rely=0.1, relwidth=0.958, relheight=0.15)
+            else:
+                btn.place(in_=prev_widget, relx=0, rely=1.1, relwidth=1, relheight=1)
 
             total_pages[category].set(str(get_total_pages(account_loc, category)))
+
+            prev_widget = btn
 
             win.update()
 
@@ -419,38 +481,6 @@ def book_collection():
 
     update_tab()
 
-# Quit Add Book Section
-def quit_add_books(event, frame, widgets):
-
-    saved_widgets[0].configure(state="disabled")
-
-    win.unbind("<Motion>")
-    for widget in frame.winfo_children():
-        widget.destroy()
-
-    size = 0.8
-    while size >= 0.1:
-        frame.place_configure(relwidth=size, relheight=size)
-        
-        win.update()
-        sleep(0.001)
-
-        size -= 0.12
-
-    size=0.1
-    frame.place_configure(relwidth=size, relheight=size)
-
-    frame.destroy()
-    win.unbind("<Escape>")
-
-    # Enabling Widgets on closing Search Window
-    widgets[0].configure(state="normal")
-    widgets[1].configure(state="normal", fg_color="#9a4cfa")
-    for widget in widgets[0].tab(widgets[0].get()).winfo_children():
-        if "label" not in str(widget):
-            widget.configure(state="normal", fg_color="#9a4cfa")
-    win.bind("<Escape>", quit_application)
-
 # Add New Books
 def add_book(widgets):
     global saved_widgets, search_bar
@@ -461,8 +491,10 @@ def add_book(widgets):
     widgets[0].configure(state="disabled")
     widgets[1].configure(state="disabled", fg_color="#3a3a3a", text_color_disabled="#777777")
     for widget in widgets[0].tab(widgets[0].get()).winfo_children():
-        if "label" not in str(widget):
+        if ("label" not in str(widget)) and (widget.cget("text") in ["◀", "▶"]):
             widget.configure(state="disabled", fg_color="#3a3a3a", text_color_disabled="#777777")
+        else:
+            widget.configure(state="disabled")
 
     search_frame = ctk.CTkFrame(win, bg_color="#1f1f1f", fg_color="#0f0f0f", corner_radius=h/27)
     search_frame.place(relx=0.5, rely=0.5, relheight=0.1, relwidth=0.1, anchor=ctk.CENTER)
@@ -519,18 +551,32 @@ def update_search(search_frame, search_term):
 
     recommendations = get_book_details(search_text)
 
-    list_of_recommendations = []
+    def start_marquee(label, text, speed=200):
+        def scroll():
+            nonlocal text
+            text = text[1:] + text[0]  # shift text left
+            label.configure(text=text)
+            label._marquee_job = label.after(speed, scroll)
 
+        label._marquee_job = label.after(speed, scroll)
+
+    def stop_marquee(label, original_text):
+        if hasattr(label, "_marquee_job"):
+            label.after_cancel(label._marquee_job)
+            label.configure(text=original_text)
+
+    list_of_recommendations = []
     def load_recommendation(book):
 
         with urllib.request.urlopen(book["thumbnail"]) as u:
             raw_data = u.read()
 
-        image = Image.open(io.BytesIO(raw_data))
-        
-        recommendation = ctk.CTkButton(search_frame, image=ctk.CTkImage(dark_image=image, size=(w/8.53, h/4.32)), fg_color="#0f0f0f", hover_color="#1f1f1f", compound=ctk.TOP, text=book["title"], width=w/8.53 + 25, height=h/4.32 + 65, command=lambda book=book: get_book(search_frame, search_term, book))
+        image = create_rounded_image(io.BytesIO(raw_data), 35)
+
+        recommendation = ctk.CTkButton(search_frame, text=book["title"], font=("Helvetica", h/65, "bold"), image=ctk.CTkImage(dark_image=image, size=(w/8.53, h/4.32)), fg_color="#0f0f0f", hover_color="#1f1f1f", compound=ctk.TOP, anchor="w", width=w/8.53 + 25, height=h/4.32 + 65, command=lambda book=book: get_book(search_frame, search_term, book))
+        recommendation.bind("<Enter>", lambda event, recommendation=recommendation: start_marquee(recommendation, book["title"]+"      ", speed=150))
+        recommendation.bind("<Leave>", lambda event, recommendation=recommendation: stop_marquee(recommendation, book["title"]))
         try:
-            recommendation._text_label.configure(wraplength=150)
             thread = threading.Thread(target=lambda search_text=search_text: kill_recommendation(recommendation, search_term, search_text))
             thread.start()
 

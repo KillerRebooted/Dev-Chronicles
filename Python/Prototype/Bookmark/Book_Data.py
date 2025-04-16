@@ -1,7 +1,7 @@
 import sqlite3
 import os
 
-limit = 1 # Number of Entries per page
+limit = 5 # Number of Entries per page
 
 def create_table(cursor):
     # Create Table
