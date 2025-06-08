@@ -27,7 +27,7 @@ class CircleRotation(Scene):
         ref_circle_r_by_3_true = Circle(radius=0.5, color=color_2).move_to(ref_circle_r_by_3)
 
         # Adding Audio Track to the Animation
-        self.add_sound("Edited Sample 1.mp3")
+        #self.add_sound("Edited Sample 1.mp3")
 
         self.play(Write(start_text, font_size=30), run_time=3)
         self.wait(4)
@@ -108,9 +108,9 @@ class CircleRotation(Scene):
         self.wait(2)
 
         # Demonstrate that the Perimeter of Larger Circle is 3 Times the Smaller one
-        arc_1 = Arc(angle=2*PI/3, radius=1.5, start_angle=-PI, color=color_2).shift(DOWN*0.2)
-        arc_2 = Arc(angle=2*PI/3, radius=1.5, start_angle=-PI+2*PI/3, color=color_2).shift(DOWN*0.2)
-        arc_3 = Arc(angle=2*PI/3, radius=1.5, start_angle=-PI+4*PI/3, color=color_2).shift(DOWN*0.2)
+        arc_1 = Arc(angle=TAU/3, radius=1.5, start_angle=-PI, color=color_2).shift(DOWN*0.2)
+        arc_2 = Arc(angle=TAU/3, radius=1.5, start_angle=-PI+TAU/3, color=color_2).shift(DOWN*0.2)
+        arc_3 = Arc(angle=TAU/3, radius=1.5, start_angle=-PI+4*PI/3, color=color_2).shift(DOWN*0.2)
 
         self.play(TransformFromCopy(circle_r_by_3, arc_1), run_time=1)
         self.wait(1)
@@ -143,8 +143,8 @@ class CircleRotation(Scene):
         self.wait(3)
 
         # Create and Display Coin Demonstration
-        coin_1_circle = Circle(radius=1.1, color="#DC143C")
-        coin_2_circle = Circle(radius=1.1, color="#DC143C").next_to(coin_1_circle, UP, buff=0)
+        coin_1_circle = Circle(radius=1.1, color=color_1)
+        coin_2_circle = Circle(radius=1.1, color=color_2).next_to(coin_1_circle, UP, buff=0)
         coin_1 = ImageMobject("Coin.png").scale(0.5)
         coin_2 = ImageMobject("Coin.png").scale(0.5).move_to(coin_2_circle)
         
@@ -155,14 +155,17 @@ class CircleRotation(Scene):
         self.play(FadeOut(circle_r), FadeOut(circle_r_by_3), FadeIn(coin_1), FadeIn(coin_2), run_time=1.5)
         self.wait(1.5)
         
-        flash_1 = ShowPassingFlash(coin_1_circle.copy().set_color(RED).set_stroke(width=8))
-        flash_2 = ShowPassingFlash(coin_2_circle.copy().set_color(RED).set_stroke(width=8))
+        # Highlight Coins to indicate that the perimeters are equal
+        flash_1 = ShowPassingFlash(coin_1_circle.copy().set_color(color_1).set_stroke(width=8))
+        flash_2 = ShowPassingFlash(coin_2_circle.copy().set_color(color_2).set_stroke(width=8))
         self.play(flash_1, flash_2, run_time=1)
+        self.wait(2)
+
         
-        self.play(Rotate(coin_2, angle=2*PI), MoveAlongPath(coin_2, Arc(angle=PI, radius=2.2, start_angle=PI/2)), rate_func=linear, run_time=3)
+        self.play(Rotate(coin_2, angle=TAU), MoveAlongPath(coin_2, Arc(angle=PI, radius=2.2, start_angle=PI/2)), rate_func=linear, run_time=3)
         self.wait(1)
-        self.play(Rotate(coin_2, angle=2*PI), MoveAlongPath(coin_2, Arc(angle=PI, radius=2.2, start_angle=-PI/2)), rate_func=linear, run_time=3)
+        self.play(Rotate(coin_2, angle=TAU), MoveAlongPath(coin_2, Arc(angle=PI, radius=2.2, start_angle=-PI/2)), rate_func=linear, run_time=3)
         self.wait(5)
-        self.play(Rotate(coin_2, angle=2*PI), MoveAlongPath(coin_2, Arc(angle=PI, radius=2.2, start_angle=PI/2)), rate_func=linear, run_time=3)
+        self.play(Rotate(coin_2, angle=TAU), MoveAlongPath(coin_2, Arc(angle=PI, radius=2.2, start_angle=PI/2)), rate_func=linear, run_time=3)
         self.wait(1)
-        self.play(Rotate(coin_2, angle=2*PI), MoveAlongPath(coin_2, Arc(angle=PI, radius=2.2, start_angle=-PI/2)), rate_func=linear, run_time=3)
+        self.play(Rotate(coin_2, angle=TAU), MoveAlongPath(coin_2, Arc(angle=PI, radius=2.2, start_angle=-PI/2)), rate_func=linear, run_time=3)

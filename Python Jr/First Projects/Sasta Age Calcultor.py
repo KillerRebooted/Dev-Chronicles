@@ -19,9 +19,9 @@ months = 12
 #If the birth year is a leap year
 
 if (birth_year % 4 == 0) and (birth_month == 2) and (current_month < birth_month):
-    print (f"You are {current_year - birth_year} years old and there are {birth_month - current_month} month(s) left and for your birthday")
+    print (f"You are {current_year - birth_year} years old and there is/are {birth_month - current_month} month(s) left for your birthday")
 elif (birth_year % 4 == 0) and (birth_month == 2) and (current_month > birth_month):
-    print (f"You are {current_year - birth_year} years old and there are {(months - current_month) + birth_month} month(s) left for your birthday")
+    print (f"You are {current_year - birth_year} years old and there is/are {(months - current_month) + birth_month} month(s) left for your birthday")
 
 #If date is 29 or greater in feb on an ordinary year
 
@@ -73,8 +73,8 @@ elif (current_year % 100 == 0) and (current_year % 400 != 0):
 #Giving answers
 
 if (current_month < birth_month) and (birth_date < current_date):
-    print(f"You are {current_year - birth_year - 1} years old and there are {birth_month - current_month} month(s) left and for your birthday")
+    print(f"You are {current_year - birth_year - 1} years old and there is/are {birth_month - current_month} month(s) left for your birthday")
 elif (current_month > birth_month) and (current_date > birth_date): 
-    print(f"You are {current_year - birth_year} years old and there are {(months - current_month) + birth_month} month(s) left and for your birthday")
+    print(f"You are {current_year - birth_year} years old and there is/are {(months - current_month) + birth_month} month(s) left for your birthday")
 elif (current_month < birth_month) and (current_date > birth_date):
-    print(f"You are {current_year - birth_year} years old and there are {(months - current_month) + birth_month} month(s) left and for your birthday")
+    print(f"You are {current_year - birth_year} years old and there is/are {(months - current_month) + birth_month} month(s) left for your birthday")

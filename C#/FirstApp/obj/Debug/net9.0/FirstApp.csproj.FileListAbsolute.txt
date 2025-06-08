@@ -1,0 +1,15 @@
+D:\CodingFiles\C#\FirstApp\bin\Debug\net9.0\FirstApp.exe
+D:\CodingFiles\C#\FirstApp\bin\Debug\net9.0\FirstApp.deps.json
+D:\CodingFiles\C#\FirstApp\bin\Debug\net9.0\FirstApp.runtimeconfig.json
+D:\CodingFiles\C#\FirstApp\bin\Debug\net9.0\FirstApp.dll
+D:\CodingFiles\C#\FirstApp\bin\Debug\net9.0\FirstApp.pdb
+D:\CodingFiles\C#\FirstApp\obj\Debug\net9.0\FirstApp.GeneratedMSBuildEditorConfig.editorconfig
+D:\CodingFiles\C#\FirstApp\obj\Debug\net9.0\FirstApp.AssemblyInfoInputs.cache
+D:\CodingFiles\C#\FirstApp\obj\Debug\net9.0\FirstApp.AssemblyInfo.cs
+D:\CodingFiles\C#\FirstApp\obj\Debug\net9.0\FirstApp.csproj.CoreCompileInputs.cache
+D:\CodingFiles\C#\FirstApp\obj\Debug\net9.0\FirstApp.sourcelink.json
+D:\CodingFiles\C#\FirstApp\obj\Debug\net9.0\FirstApp.dll
+D:\CodingFiles\C#\FirstApp\obj\Debug\net9.0\refint\FirstApp.dll
+D:\CodingFiles\C#\FirstApp\obj\Debug\net9.0\FirstApp.pdb
+D:\CodingFiles\C#\FirstApp\obj\Debug\net9.0\FirstApp.genruntimeconfig.cache
+D:\CodingFiles\C#\FirstApp\obj\Debug\net9.0\ref\FirstApp.dll

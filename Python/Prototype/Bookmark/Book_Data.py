@@ -19,6 +19,7 @@ def create_table(cursor):
         publisher TEXT,
         publish_date TEXT,
         categories TEXT,
+        page_count TEXT,
         description TEXT,
         maturity_rating TEXT
     )
@@ -39,7 +40,7 @@ def track_book(account_loc, book, status):
 
     if (not exists) and (status != "Remove From List"):
         # Insert Data
-        cursor.execute("INSERT INTO User_Data VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (book['id'], status, book["thumbnail"], book['title'], book['authors'], book['language'], book['isbn10'], book['isbn13'], book['publisher'], book['publish_date'], book['categories'], book['description'], book['maturity_rating']))
+        cursor.execute("INSERT INTO User_Data VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (book['id'], status, book["thumbnail"], book['title'], book['authors'], book['language'], book['isbn10'], book['isbn13'], book['publisher'], book['publish_date'], book['categories'], book['page_count'], book['description'], book['maturity_rating']))
     elif (exists) and (status == "Remove From List"):
         # Delete Tuple in case Remove requested
         cursor.execute(f"DELETE FROM User_Data WHERE id = '{book["id"]}'")

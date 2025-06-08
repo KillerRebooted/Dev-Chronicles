@@ -58,7 +58,7 @@ def center(win, screen_resolution, animation_time):
     win.update()
 
 
-# -------------- Login and Sign Up Functions --------------
+# -------------- Login and Sign Up Functions -------------- #
 
 # Switch Between Login and Sign Up Windows
 def switch_method(button):
@@ -311,7 +311,7 @@ def sign_up(username_taken = False):
         frame.after(5000, pass_notification.destroy)
 
 
-# -------------- Main App Functions --------------
+# -------------- Main App Functions -------------- #
 
 # --> Quit Functions
 
@@ -320,9 +320,11 @@ def quit_application(event):
     win.destroy()
 
 # Quit Add Book Section
-def quit_add_books(event, frame, widgets):
+def quit_add_books(frame, widgets):
 
-    saved_widgets[0].configure(state="disabled")
+    # In case there are no Saved Widgets; In the case User is accessing a Saved Book
+    if saved_widgets:
+        saved_widgets[0].configure(state="disabled")
 
     win.unbind("<Motion>")
     for widget in frame.winfo_children():
@@ -373,8 +375,19 @@ def create_rounded_image(image_path, radius):
     img.putalpha(alpha)
     return img
 
+# Open Saved Book Details
+def open_book_details(widgets, books, book_num):
+
+    # Get the specified Book and make a separate Dictionary
+    book = {}
+    for content_title in books.keys():
+        book[content_title] = books[content_title][book_num]
+
+    add_book(widgets, book, search=False)
+
 # Book Collection
 def book_collection():
+    global update_tab
 
     frame.destroy()
     win.unbind("<Return>")
@@ -387,7 +400,7 @@ def book_collection():
     main_frame.pack(fill="both", expand=True)
 
     # Add/Update Buttons to Tab
-    def update_tab():
+    def update_tab(widgets):
         category = tabs.get()
 
         for widget in tabs.tab(category).winfo_children():
@@ -400,7 +413,7 @@ def book_collection():
 
             image = create_rounded_image(io.BytesIO(books["thumbnail"][book_num]), 35)
 
-            btn = ctk.CTkButton(tabs.tab(category), text=books["title"][book_num], fg_color="#1f1f1f", hover_color="#9a4cfa", border_color="#9a4cfa", border_width=2, image=ctk.CTkImage(dark_image=image, size=(150, 125)), compound=ctk.LEFT, anchor="w", corner_radius=15)
+            btn = ctk.CTkButton(tabs.tab(category), text=books["title"][book_num], fg_color="#1f1f1f", hover_color="#9a4cfa", border_color="#9a4cfa", border_width=2, image=ctk.CTkImage(dark_image=image, size=(150, 125)), compound=ctk.LEFT, anchor="w", corner_radius=15, command=lambda book_num=book_num: open_book_details(widgets, books, book_num))
             
             if book_num == 0:
                 btn.place(relx=0.02, rely=0.1, relwidth=0.958, relheight=0.15)
@@ -413,7 +426,7 @@ def book_collection():
 
             win.update()
 
-    # Page Change
+    # Change Page
     def page_change(change_qty):
         category = tabs.get()
 
@@ -423,7 +436,7 @@ def book_collection():
         if not ((new_page_count == 0) or (new_page_count > int(total_pages[category].get()))):
             page_var.set(new_page_count)
 
-        update_tab()
+        update_tab([tabs, add_btn])
 
     # Create Tabular View
     tabs = ctk.CTkTabview(main_frame,
@@ -436,7 +449,7 @@ def book_collection():
                         segmented_button_unselected_color="#2a2a2a",
                         segmented_button_selected_hover_color="#b87bff",
                         segmented_button_unselected_hover_color="#393939",
-                        command=update_tab)
+                        command=lambda: update_tab([tabs, add_btn]))
     tabs._segmented_button.configure(font=("Helvetica", h/45, "bold"))
     tabs.pack(padx=w/32, pady=h/54, fill="both", expand=True)
 
@@ -479,10 +492,10 @@ def book_collection():
 
     win.update()
 
-    update_tab()
+    update_tab([tabs, add_btn])
 
 # Add New Books
-def add_book(widgets):
+def add_book(widgets, book=None, search=True):
     global saved_widgets, search_bar
 
     win.unbind("<Escape>")
@@ -496,31 +509,48 @@ def add_book(widgets):
         else:
             widget.configure(state="disabled")
 
-    search_frame = ctk.CTkFrame(win, bg_color="#1f1f1f", fg_color="#0f0f0f", corner_radius=h/27)
-    search_frame.place(relx=0.5, rely=0.5, relheight=0.1, relwidth=0.1, anchor=ctk.CENTER)
+    # To check whether this function is being used by the Search Method or just to see a Saved Book
+    if search:
+        search_frame = ctk.CTkFrame(win, bg_color="#1f1f1f", fg_color="#0f0f0f", corner_radius=h/27)
+        search_frame.place(relx=0.5, rely=0.5, relheight=0.1, relwidth=0.1, anchor=ctk.CENTER)
 
-    size = 0.1
-    while size <= 0.8:
+        size = 0.1
+        while size <= 0.8:
+            search_frame.place_configure(relwidth=size, relheight=size)
+            
+            win.update()
+            sleep(0.008)
+
+            size += 0.12
+
+        size=0.8
         search_frame.place_configure(relwidth=size, relheight=size)
+    
+    else:
+        search_frame = ctk.CTkFrame(win, bg_color="#1f1f1f", fg_color="#0f0f0f", corner_radius=h/27)
+        search_frame.place(relx=0.5, rely=0.5, relheight=0.8, relwidth=0.8, anchor=ctk.CENTER)
+
+    def escape_function(search_frame):
+        quit_add_books(search_frame, widgets)
+        update_tab(widgets)
+
+    win.bind("<Escape>", lambda event, search_frame=search_frame: escape_function(search_frame))
+
+    if search:
+        # String Variable that keeps track of the Text in the search_bar
+        search_term = ctk.StringVar()
+        search_term.trace_add('write', lambda var, index, mode: run_thread(search_frame, search_term))
+
+        # Search Bar has no Placeholder Text since Textvariable used, a bug in CustomTkinter
+        search_bar = ctk.CTkEntry(search_frame, fg_color="#1f1f1f", placeholder_text="Enter ISBN No. or Name of the Book...", textvariable=search_term)
+        search_bar.place(relx=0.48, rely=0.1, relwidth=0.45, relheight=0.06, anchor=ctk.CENTER)
+
+        saved_widgets = [search_bar]
+
+    else:
+        saved_widgets = None
         
-        win.update()
-        sleep(0.008)
-
-        size += 0.12
-
-    size=0.8
-    search_frame.place_configure(relwidth=size, relheight=size)
-
-    win.bind("<Escape>", lambda event, search_frame=search_frame: quit_add_books(event, search_frame, widgets))
-
-    search_term = ctk.StringVar()
-    search_term.trace_add('write', lambda var, index, mode: run_thread(search_frame, search_term))
-
-    # Search Bar has no Placeholder Text since Textvariable used, a bug in CustomTkinter
-    search_bar = ctk.CTkEntry(search_frame, fg_color="#1f1f1f", placeholder_text="Enter ISBN No. or Name of the Book...", textvariable=search_term)
-    search_bar.place(relx=0.48, rely=0.1, relwidth=0.45, relheight=0.06, anchor=ctk.CENTER)
-
-    saved_widgets = [search_bar]
+        win.after(100, lambda: get_book(search_frame, book))
 
 # Run threads to run searches
 def run_thread(search_frame, search_term):
@@ -573,7 +603,7 @@ def update_search(search_frame, search_term):
 
         image = create_rounded_image(io.BytesIO(raw_data), 35)
 
-        recommendation = ctk.CTkButton(search_frame, text=book["title"], font=("Helvetica", h/65, "bold"), image=ctk.CTkImage(dark_image=image, size=(w/8.53, h/4.32)), fg_color="#0f0f0f", hover_color="#1f1f1f", compound=ctk.TOP, anchor="w", width=w/8.53 + 25, height=h/4.32 + 65, command=lambda book=book: get_book(search_frame, search_term, book))
+        recommendation = ctk.CTkButton(search_frame, text=book["title"], font=("Helvetica", h/65, "bold"), image=ctk.CTkImage(dark_image=image, size=(w/8.53, h/4.32)), fg_color="#0f0f0f", hover_color="#1f1f1f", compound=ctk.TOP, anchor="w", width=w/8.53 + 25, height=h/4.32 + 65, command=lambda book=book: get_book(search_frame, book, search_term))
         recommendation.bind("<Enter>", lambda event, recommendation=recommendation: start_marquee(recommendation, book["title"]+"      ", speed=150))
         recommendation.bind("<Leave>", lambda event, recommendation=recommendation: stop_marquee(recommendation, book["title"]))
         try:
@@ -620,12 +650,16 @@ def update_search(search_frame, search_term):
         pass
 
 # Fetch Book Details
-def get_book(search_frame, search_term, book):
+def get_book(search_frame, book, search_term=None):
 
-    search_term.set("")
+    # To check whether this function is being used by the Search Method or just to see a Saved Book
+    if search_term:
+        search_term.set("")
 
-    with urllib.request.urlopen(book["thumbnail"]) as u:
-        raw_data = u.read()
+        with urllib.request.urlopen(book["thumbnail"]) as u:
+            raw_data = u.read()
+    else:
+        raw_data = book["thumbnail"]
 
     image = Image.open(io.BytesIO(raw_data)).convert('RGB')
     image_enhancer = ImageEnhance.Brightness(image)
@@ -636,7 +670,12 @@ def get_book(search_frame, search_term, book):
             widget.destroy()
     
     bg = ctk.CTkLabel(search_frame, text="", fg_color="#0f0f0f")
-    bg.place(relx=0.05, rely=0.25, relwidth=0.2, relheight=0.5)
+    
+    # To check whether this function is being used by the Search Method or just to see a Saved Book. Place everything slightly higher in absence of the Search Bar
+    if search_term:
+        bg.place(relx=0.05, rely=0.25, relwidth=0.2, relheight=0.5)
+    else:
+        bg.place(relx=0.05, rely=0.2, relwidth=0.2, relheight=0.5)
 
     image = ctk.CTkLabel(search_frame, text="", image=ctk.CTkImage(dark_image=enhanced_image, size=(search_frame.winfo_width()/100 * 20, search_frame.winfo_height()/100 * 50)))
     image.place(in_=bg, relx=0, rely=0, relwidth=1, relheight=1)
