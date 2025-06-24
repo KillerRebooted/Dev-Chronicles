@@ -57,6 +57,20 @@ def center(win, screen_resolution, animation_time):
 
     win.update()
 
+# Marquee Text Functions
+def start_marquee(label, text, speed=200):
+    def scroll():
+        nonlocal text
+        text = text[1:] + text[0]  # shift text left
+        label.configure(text=text)
+        label._marquee_job = label.after(speed, scroll)
+
+    label._marquee_job = label.after(speed, scroll)
+
+def stop_marquee(label, original_text):
+    if hasattr(label, "_marquee_job"):
+        label.after_cancel(label._marquee_job)
+        label.configure(text=original_text)
 
 # -------------- Login and Sign Up Functions -------------- #
 
@@ -385,7 +399,7 @@ def open_book_details(widgets, books, book_num):
 
     add_book(widgets, book, search=False)
 
-# Book Collection
+# User Book Collection
 def book_collection():
     global update_tab
 
@@ -414,6 +428,9 @@ def book_collection():
             image = create_rounded_image(io.BytesIO(books["thumbnail"][book_num]), 35)
 
             btn = ctk.CTkButton(tabs.tab(category), text=books["title"][book_num], fg_color="#1f1f1f", hover_color="#9a4cfa", border_color="#9a4cfa", border_width=2, image=ctk.CTkImage(dark_image=image, size=(150, 125)), compound=ctk.LEFT, anchor="w", corner_radius=15, command=lambda book_num=book_num: open_book_details(widgets, books, book_num))
+            btn.configure(font=("Helvetica", h/32, "bold"))
+            btn.bind("<Enter>", lambda event, btn=btn, book_num=book_num: start_marquee(btn, books["title"][book_num]+"      ", speed=150))
+            btn.bind("<Leave>", lambda event, btn=btn, book_num=book_num: stop_marquee(btn, books["title"][book_num]))
             
             if book_num == 0:
                 btn.place(relx=0.02, rely=0.1, relwidth=0.958, relheight=0.15)
@@ -580,20 +597,6 @@ def update_search(search_frame, search_term):
         return
 
     recommendations = get_book_details(search_text)
-
-    def start_marquee(label, text, speed=200):
-        def scroll():
-            nonlocal text
-            text = text[1:] + text[0]  # shift text left
-            label.configure(text=text)
-            label._marquee_job = label.after(speed, scroll)
-
-        label._marquee_job = label.after(speed, scroll)
-
-    def stop_marquee(label, original_text):
-        if hasattr(label, "_marquee_job"):
-            label.after_cancel(label._marquee_job)
-            label.configure(text=original_text)
 
     list_of_recommendations = []
     def load_recommendation(book):
