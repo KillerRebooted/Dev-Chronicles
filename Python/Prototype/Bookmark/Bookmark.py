@@ -8,6 +8,7 @@ import urllib.request
 import threading
 import time
 from PIL import Image, ImageEnhance, ImageDraw
+import ctypes
 from Book_Scouter import get_book_details
 from Book_Data import track_book, read_data, get_total_pages
 
@@ -21,8 +22,15 @@ win = ctk.CTk(fg_color="#121212")
 win.title("Login")
 win.geometry("0x0")
 
+# Get real screen resolution (ignores scaling)
+def get_true_screen_resolution():
+    user32 = ctypes.windll.user32
+    return user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)
+
 w = win.winfo_screenwidth()
 h = win.winfo_screenheight()
+
+true_w, true_h = get_true_screen_resolution()
 
 # Center Window Method
 def center(win, screen_resolution, animation_time):
@@ -36,8 +44,8 @@ def center(win, screen_resolution, animation_time):
 
         win.geometry(f"{int(x1)}x{int(y1)}")
 
-        x2 = w//2 - win.winfo_width()//2
-        y2 = h//2 - win.winfo_height()//2
+        x2 = true_w//2 - win.winfo_width()//2
+        y2 = true_h//2 - win.winfo_height()//2
 
         win.geometry(f"+{x2}+{y2}")
 
@@ -50,8 +58,8 @@ def center(win, screen_resolution, animation_time):
 
     win.geometry(f"{int(x1)}x{int(y1)}")
 
-    x2 = w//2 - win.winfo_width()//2
-    y2 = h//2 - win.winfo_height()//2
+    x2 = true_w//2 - win.winfo_width()//2
+    y2 = true_h//2 - win.winfo_height()//2
 
     win.geometry(f"+{x2}+{y2}")
 
@@ -408,6 +416,8 @@ def book_collection():
 
     center(win, (w, h), 2)
     win.attributes("-fullscreen", True)
+    win.attributes("-fullscreen", False)
+    win.geometry(f"{w}x{h}+0+0")
 
     # Main App Frame
     main_frame = ctk.CTkFrame(win, fg_color="#121212")
