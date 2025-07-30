@@ -3,6 +3,9 @@
 #include <tuple>
 #include <bitset>
 #include <chrono>
+#include <cmath>
+#include <algorithm>
+#include <utility>
 
 std::list <std::pair<int, int>> create_set(int n) {
 	std::list <std::pair<int, int>> universal_set;
