@@ -37,7 +37,7 @@ def scan_img(solution=False, sudoku_solution=None):
 
                 picture = img.crop((int(c*box_width), int(r*box_height), int(c*box_width+box_width), int(r*box_height+box_height)))
 
-                pytesseract.pytesseract.tesseract_cmd =r'C:\Users\Shreyas Nair\AppData\Local\Programs\Tesseract-OCR\tesseract.exe'
+                pytesseract.pytesseract.tesseract_cmd =r'C:\Users\kille\AppData\Local\Programs\Tesseract-OCR\tesseract.exe'
 
                 result = pytesseract.image_to_string(picture, config="--psm 6")[0:1]
 

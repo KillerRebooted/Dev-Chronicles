@@ -4,6 +4,7 @@ import random as rand
 import os
 from playsound import playsound
 import threading
+import ctypes
 from Backbone_of_Minesweeper import generate_board, make_move
 
 #Working Directory
@@ -36,25 +37,45 @@ def create_board(size):
 
     win.update()
 
+# Get real screen resolution (ignores scaling)
+def get_true_screen_resolution():
+    user32 = ctypes.windll.user32
+    return user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)
+
+true_w, true_h = get_true_screen_resolution()
+
 #Designer Functions
 def center(win, screen_resolution, animation_time):
 
     x1, y1 = 0, 0
 
-    while x1 != screen_resolution[0] or y1 != screen_resolution[1]:
+    while (x1 < screen_resolution[0]) or (y1 < screen_resolution[1]):
 
         if x1 != screen_resolution[0]: x1 += screen_resolution[0]/(animation_time*10)
         if y1 != screen_resolution[1]: y1 += screen_resolution[1]/(animation_time*10)
 
         win.geometry(f"{int(x1)}x{int(y1)}")
 
-        x2 = w//2 - win.winfo_width()//2
-        y2 = h//2 - win.winfo_height()//2
+        x2 = true_w//2 - win.winfo_width()//2
+        y2 = true_h//2 - win.winfo_height()//2
 
         win.geometry(f"+{x2}+{y2}")
 
         sleep(0.008)
         win.update()
+
+
+    x1 = screen_resolution[0]
+    y1 = screen_resolution[1]
+
+    win.geometry(f"{int(x1)}x{int(y1)}")
+
+    x2 = true_w//2 - win.winfo_width()//2
+    y2 = true_h//2 - win.winfo_height()//2
+
+    win.geometry(f"+{x2}+{y2}")
+
+    win.update()
 
 #Game Functions
 def click(coords):
@@ -125,7 +146,9 @@ def main(size, difficulty):
     global board, mine_placements, lost
         
     center(win, (w, h), 1)
-    win.attributes('-fullscreen', True)
+    win.attributes("-fullscreen", True)
+    win.attributes("-fullscreen", False)
+    win.geometry(f"{w}x{h}+0+0")
 
     lost = False
 

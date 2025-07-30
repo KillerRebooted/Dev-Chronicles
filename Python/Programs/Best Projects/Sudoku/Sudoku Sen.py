@@ -58,7 +58,7 @@ def convert(inp):
     return converted
 
 def reverse_convert(inp):
-    
+
     converted = ""
     
     for r in range(9):
@@ -153,7 +153,7 @@ def initial_solve(sudoku):
                             new_changes = True
 
     sudoku = convert(sudoku)
-    
+
     return sudoku
 
 #Helper Functions
