@@ -5,7 +5,7 @@ import os
 
 #pyautogui.PAUSE = 0
 
-def scan_img(solution=False, sudoku_solution=None):
+def scan_img(solution=False):
 
     # get image
     filepath = fr"{os.path.dirname(os.path.abspath(__file__))}\Sudoku.png"
@@ -52,7 +52,7 @@ def scan_img(solution=False, sudoku_solution=None):
 
                 pyautogui.click(sudoku[0] + c*box_width + box_width/2, sudoku[1] + r*box_height + box_height/2)
 
-                pyautogui.write(str(sudoku_solution[r][c]))
+                pyautogui.write(str(solution[r][c]))
 
     return final_result
 

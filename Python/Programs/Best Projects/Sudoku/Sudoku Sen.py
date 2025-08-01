@@ -39,7 +39,7 @@ def create_widgets():
     solve_button = ctk.CTkButton(win, text="Solve!", width=227, height=50, text_color="#000000", font=("Helvetica", 18, "bold"), fg_color="#FFFFFF", corner_radius=0, border_width=1, border_color="black", hover_color="#6bedbf", command=lambda: solve(convert_input(initial_solve(make_simple_sudoku(reverse_convert(sudoku))))))
     solve_button.place(x=0, y=454)
 
-    solve_on_screen = ctk.CTkButton(win, text="Solve on Screen", width=227, height=50, text_color="#000000", font=("Helvetica", 18, "bold"), fg_color="#FFFFFF", corner_radius=0, border_width=1, border_color="black", hover_color="#6bedbf", command=lambda: scan_img(True, sudoku))
+    solve_on_screen = ctk.CTkButton(win, text="Solve on Screen", width=227, height=50, text_color="#000000", font=("Helvetica", 18, "bold"), fg_color="#FFFFFF", corner_radius=0, border_width=1, border_color="black", hover_color="#6bedbf", command=lambda: scan_img(sudoku))
     solve_on_screen.place(x=227, y=454)
 
     win.update()
@@ -87,7 +87,7 @@ def make_simple_sudoku(inp):
 
     return grid
 
-def initial_solve(sudoku):
+def initial_solve(puzzle):
 
     horizontal_listing = [[0, 1, 2], [3, 4, 5], [6, 7, 8]]
     vertical_listing = [[0, 3, 6], [1, 4, 7], [2, 5, 8]]
@@ -98,34 +98,34 @@ def initial_solve(sudoku):
 
         #Adding Numbers of Same Box to Set
 
-        for line in sudoku[coords[0]].values():
+        for line in puzzle[coords[0]].values():
             for num in range(3):
                 found_numbers.add(line[num])
 
         #Finding the Boxes in Horizontal and Vertical Line
 
         for boxes in horizontal_listing:
-            if num in boxes:
+            if coords[0] in boxes:
                 horizontal_boxes = boxes
 
         for boxes in vertical_listing:
-            if num in boxes:
+            if coords[0] in boxes:
                 vertical_boxes = boxes
 
         #Checking Horizontal and Vertical Lines
 
         for box in horizontal_boxes:
-            for num in sudoku[box][coords[1]]:
-                found_numbers.add(num)
+            for row_num in puzzle[box][coords[1]]:
+                found_numbers.add(row_num)
 
         for box in vertical_boxes:
-            for line in sudoku[box].values():
-                found_numbers.add(line[coords[2]])
+            for column_num in puzzle[box][coords[2]]:
+                found_numbers.add(column_num)
 
         found_numbers.remove(" ")
 
         return found_numbers
-    
+
     new_changes = True
 
     while new_changes:
@@ -134,11 +134,11 @@ def initial_solve(sudoku):
         
         #Checking Boxes
 
-        for box_num in (range(len(sudoku))):
+        for box_num in (range(len(puzzle))):
             for line_num in range(3):
                 for column_num in range(3):
 
-                    digit = sudoku[box_num][line_num][column_num]
+                    digit = puzzle[box_num][line_num][column_num]
 
                     if digit == " ":
                         coords = [box_num, line_num, column_num]
@@ -147,12 +147,12 @@ def initial_solve(sudoku):
                         possible_digit = 45 - sum(vicinity)
 
                         if possible_digit <= 9 and len(vicinity) == 8:
-                            sudoku[box_num][line_num][column_num] = possible_digit
+                            puzzle[box_num][line_num][column_num] = possible_digit
                             new_changes = True
 
-    sudoku = convert(sudoku)
+    puzzle = convert(puzzle)
 
-    return sudoku
+    return puzzle
 
 #Helper Functions
 
@@ -185,17 +185,16 @@ def is_valid(puzzle, r, c, guess):
             
     return True
 
-#Solving Algorithm
+#Backtracking Solving Algorithm
 def solve(puzzle):
     global sudoku
-
-    sudoku = puzzle
 
     make_sudoku(puzzle)
 
     row, column = get_next_empty(puzzle)
 
     if row is None:
+        sudoku = puzzle
         return True
 
     for guess in range(1, 10):
@@ -215,15 +214,15 @@ def solve(puzzle):
 #Puzzle Input
 def convert_input(inp):
 
-    sudoku = [list(inp[i:i+9]) for i in range(0, len(inp), 9)]
+    temp_sudoku = [list(inp[i:i+9]) for i in range(0, len(inp), 9)]
 
-    for r_idx, row in enumerate(sudoku):
+    for r_idx, row in enumerate(temp_sudoku):
         for v_idx, val in enumerate(row):
             if val == ".":
-                sudoku[r_idx][v_idx] = -1
-            sudoku[r_idx][v_idx] = int(sudoku[r_idx][v_idx])
+                temp_sudoku[r_idx][v_idx] = -1
+            temp_sudoku[r_idx][v_idx] = int(temp_sudoku[r_idx][v_idx])
 
-    return sudoku
+    return temp_sudoku
 
 #Tkinter Functions
 def center(win, screen_resolution, animation_time):
@@ -264,34 +263,35 @@ def update_value(button, r, c):
     currently_clicked_button = (button, r, c)
 
 def on_press(key, grid):
+    global sudoku
 
     try:
         if key == keyboard.Key.backspace:
             currently_clicked_button[0].configure(text="")
             grid[currently_clicked_button[1]][currently_clicked_button[2]] = -1
-        if key.char.isdigit():
+        elif key.char.isdigit():
             currently_clicked_button[0].configure(text=key.char)
             grid[currently_clicked_button[1]][currently_clicked_button[2]] = int(key.char)
 
     except Exception as e:
         pass
 
-def main(grid):
+def main():
         
     center(win, (455, 505), 1)
 
     create_widgets()
 
-    make_sudoku(grid)
+    make_sudoku(sudoku)
 
-    listener = keyboard.Listener(on_press=lambda key, grid=grid: on_press(key, grid))
+    listener = keyboard.Listener(on_press=lambda key: on_press(key, sudoku))
     listener.start()  # start to listen on a separate thread
 
     win.mainloop()
 
 if __name__ == "__main__":
 
-    sudoku = [
+    """sudoku = [
         [-1,-1, -1,   8, -1, 5,   -1, 1, 3],
         [-1, -1, -1,   2, -1, 3,   6, -1, -1],
         [6, -1, -1,   -1, 9, -1,   2, -1, 4],
@@ -303,8 +303,8 @@ if __name__ == "__main__":
         [5, 9, -1,   -1, -1, 7,   1, -1, 2],
         [1, -1, 2,   -1, 8, -1,   4, 7, -1],
         [-1, -1, 4,   9, 1, -1,   -1, 3, 8]
-    ]
+    ]"""
 
-    #sudoku = convert_input(scan_img())
+    sudoku = convert_input(scan_img())
 
-    main(sudoku)
+    main()
