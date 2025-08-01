@@ -105,14 +105,12 @@ def initial_solve(sudoku):
         #Finding the Boxes in Horizontal and Vertical Line
 
         for boxes in horizontal_listing:
-            for num in boxes:
-                if num == box_num:
-                    horizontal_boxes = boxes
+            if num in boxes:
+                horizontal_boxes = boxes
 
         for boxes in vertical_listing:
-            for num in boxes:
-                if num == box_num:
-                    vertical_boxes = boxes
+            if num in boxes:
+                vertical_boxes = boxes
 
         #Checking Horizontal and Vertical Lines
 
@@ -293,20 +291,20 @@ def main(grid):
 
 if __name__ == "__main__":
 
-    """sudoku = [
-        [3, 9, -1,   -1, 5, -1,   -1, -1, -1],
-        [-1, -1, -1,   2, -1, -1,   -1, -1, 5],
-        [-1, -1, -1,   7, 1, 9,   -1, 8, -1],
+    sudoku = [
+        [-1,-1, -1,   8, -1, 5,   -1, 1, 3],
+        [-1, -1, -1,   2, -1, 3,   6, -1, -1],
+        [6, -1, -1,   -1, 9, -1,   2, -1, 4],
 
-        [-1, 5, -1,   -1, 6, 8,   -1, -1, -1],
-        [2, -1, 6,   -1, -1, 3,   -1, -1, -1],
-        [-1, -1, -1,   -1, -1, -1,   -1, -1, 4],
+        [-1, -1, -1,   -1, -1, -1,   -1, -1, 5],
+        [-1, 4, -1,   1, -1, -1,   7, -1, 6],
+        [2, 5, 6,   3, -1, 4,   8, 9, -1],
 
-        [5, -1, -1,   -1, -1, -1,   -1, -1, -1],
-        [6, 7, -1,   1, -1, 5,   -1, 4, -1],
-        [1, -1, 9,   -1, -1, -1,   2, -1, -1]
-    ]"""
+        [5, 9, -1,   -1, -1, 7,   1, -1, 2],
+        [1, -1, 2,   -1, 8, -1,   4, 7, -1],
+        [-1, -1, 4,   9, 1, -1,   -1, 3, 8]
+    ]
 
-    sudoku = convert_input(scan_img())
+    #sudoku = convert_input(scan_img())
 
     main(sudoku)
