@@ -36,7 +36,7 @@ def create_widgets():
 
             buttons.append(butt)
 
-    solve_button = ctk.CTkButton(win, text="Solve!", width=227, height=50, text_color="#000000", font=("Helvetica", 18, "bold"), fg_color="#FFFFFF", corner_radius=0, border_width=1, border_color="black", hover_color="#6bedbf", command=lambda: solve(convert_input(initial_solve(make_simple_sudoku(reverse_convert(sudoku))))))
+    solve_button = ctk.CTkButton(win, text="Solve!", width=227, height=50, text_color="#000000", font=("Helvetica", 18, "bold"), fg_color="#FFFFFF", corner_radius=0, border_width=1, border_color="black", hover_color="#6bedbf", command=lambda: solve(sudoku))
     solve_button.place(x=0, y=454)
 
     solve_on_screen = ctk.CTkButton(win, text="Solve on Screen", width=227, height=50, text_color="#000000", font=("Helvetica", 18, "bold"), fg_color="#FFFFFF", corner_radius=0, border_width=1, border_color="black", hover_color="#6bedbf", command=lambda: scan_img(sudoku))
@@ -115,12 +115,14 @@ def initial_solve(puzzle):
         #Checking Horizontal and Vertical Lines
 
         for box in horizontal_boxes:
-            for row_num in puzzle[box][coords[1]]:
-                found_numbers.add(row_num)
+            for column_value in puzzle[box][coords[1]]:
+                found_numbers.add(column_value)
 
         for box in vertical_boxes:
-            for column_num in puzzle[box][coords[2]]:
+            for row_value in [row[coords[2]] for row in puzzle[box].values()]:
                 found_numbers.add(column_num)
+
+        #print(f"{coords=}, {puzzle[coords[0]].values()=}, {found_numbers=}, {horizontal_boxes=}, {vertical_boxes=}")
 
         found_numbers.remove(" ")
 
@@ -186,15 +188,17 @@ def is_valid(puzzle, r, c, guess):
     return True
 
 #Backtracking Solving Algorithm
-def solve(puzzle):
+def solve(puzzle, first_iter=True):
     global sudoku
+
+    if first_iter:
+        puzzle = convert_input(initial_solve(make_simple_sudoku(reverse_convert(sudoku))))
 
     make_sudoku(puzzle)
 
     row, column = get_next_empty(puzzle)
 
     if row is None:
-        sudoku = puzzle
         return True
 
     for guess in range(1, 10):
@@ -204,7 +208,7 @@ def solve(puzzle):
 
             make_sudoku(puzzle)
 
-            if solve(puzzle):
+            if solve(puzzle, first_iter=False):
                 return True
             
         puzzle[row][column] = -1
