@@ -199,6 +199,7 @@ def solve(puzzle, first_iter=True):
     row, column = get_next_empty(puzzle)
 
     if row is None:
+        sudoku = puzzle
         return True
 
     for guess in range(1, 10):
