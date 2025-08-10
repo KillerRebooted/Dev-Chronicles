@@ -12,6 +12,9 @@ import ctypes
 from Book_Scouter import get_book_details
 from Book_Data import track_book, read_data, get_total_pages
 
+# Ignores DPI scaling to work in Full Screen for all Systems
+ctk.deactivate_automatic_dpi_awareness()
+
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("dark-blue")
 
@@ -22,15 +25,8 @@ win = ctk.CTk(fg_color="#121212")
 win.title("Login")
 win.geometry("0x0")
 
-# Get real screen resolution (ignores scaling)
-def get_true_screen_resolution():
-    user32 = ctypes.windll.user32
-    return user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)
-
 w = win.winfo_screenwidth()
 h = win.winfo_screenheight()
-
-true_w, true_h = get_true_screen_resolution()
 
 # Center Window Method
 def center(win, screen_resolution, animation_time):
@@ -44,8 +40,8 @@ def center(win, screen_resolution, animation_time):
 
         win.geometry(f"{int(x1)}x{int(y1)}")
 
-        x2 = true_w//2 - win.winfo_width()//2
-        y2 = true_h//2 - win.winfo_height()//2
+        x2 = w//2 - win.winfo_width()//2
+        y2 = h//2 - win.winfo_height()//2
 
         win.geometry(f"+{x2}+{y2}")
 
@@ -58,27 +54,31 @@ def center(win, screen_resolution, animation_time):
 
     win.geometry(f"{int(x1)}x{int(y1)}")
 
-    x2 = true_w//2 - win.winfo_width()//2
-    y2 = true_h//2 - win.winfo_height()//2
+    x2 = w//2 - win.winfo_width()//2
+    y2 = h//2 - win.winfo_height()//2
 
     win.geometry(f"+{x2}+{y2}")
 
     win.update()
 
 # Marquee Text Functions
-def start_marquee(label, text, speed=200):
+
+home_page_cap = 70
+search_page_cap = 20
+
+def start_marquee(home, btn, text, speed=200):
     def scroll():
         nonlocal text
         text = text[1:] + text[0]  # shift text left
-        label.configure(text=text)
-        label._marquee_job = label.after(speed, scroll)
+        btn.configure(text=text[:home_page_cap if home else search_page_cap])
+        btn._marquee_job = btn.after(speed, scroll)
 
-    label._marquee_job = label.after(speed, scroll)
+    btn._marquee_job = btn.after(speed, scroll)
 
-def stop_marquee(label, original_text):
-    if hasattr(label, "_marquee_job"):
-        label.after_cancel(label._marquee_job)
-        label.configure(text=original_text)
+def stop_marquee(home, btn, original_text):
+    if hasattr(btn, "_marquee_job"):
+        btn.after_cancel(btn._marquee_job)
+        btn.configure(text=original_text[:home_page_cap if home else search_page_cap])
 
 # -------------- Login and Sign Up Functions -------------- #
 
@@ -416,7 +416,6 @@ def book_collection():
 
     center(win, (w, h), 2)
     win.attributes("-fullscreen", True)
-    win.attributes("-fullscreen", False)
     win.geometry(f"{w}x{h}+0+0")
 
     # Main App Frame
@@ -437,10 +436,11 @@ def book_collection():
 
             image = create_rounded_image(io.BytesIO(books["thumbnail"][book_num]), 35)
 
-            btn = ctk.CTkButton(tabs.tab(category), text=books["title"][book_num], fg_color="#1f1f1f", hover_color="#9a4cfa", border_color="#9a4cfa", border_width=2, image=ctk.CTkImage(dark_image=image, size=(150, 125)), compound=ctk.LEFT, anchor="w", corner_radius=15, command=lambda book_num=book_num: open_book_details(widgets, books, book_num))
+            btn = ctk.CTkButton(tabs.tab(category), text=books["title"][book_num][:home_page_cap], fg_color="#1f1f1f", hover_color="#9a4cfa", border_color="#9a4cfa", border_width=2, image=ctk.CTkImage(dark_image=image, size=(150, 125)), compound=ctk.LEFT, anchor="w", corner_radius=15, command=lambda book_num=book_num: open_book_details(widgets, books, book_num))
             btn.configure(font=("Helvetica", h/32, "bold"))
-            btn.bind("<Enter>", lambda event, btn=btn, book_num=book_num: start_marquee(btn, books["title"][book_num]+"      ", speed=150))
-            btn.bind("<Leave>", lambda event, btn=btn, book_num=book_num: stop_marquee(btn, books["title"][book_num]))
+            btn._text_label.configure(padx=20)
+            btn.bind("<Enter>", lambda event, btn=btn, book_num=book_num: start_marquee(True, btn, books["title"][book_num]+"      ", speed=150))
+            btn.bind("<Leave>", lambda event, btn=btn, book_num=book_num: stop_marquee(True, btn, books["title"][book_num]))
             
             if book_num == 0:
                 btn.place(relx=0.02, rely=0.1, relwidth=0.958, relheight=0.15)
@@ -496,10 +496,10 @@ def book_collection():
     # Add Previous/Next Buttons and Page Counter
     for tab in all_tabs:
         previous_button = ctk.CTkButton(tabs.tab(tab), text="◀", fg_color="#9a4cfa", bg_color="#1f1f1f", hover_color="#b87bff", font=("Helvetica", h/36, "bold"), text_color="#121212", command=lambda: page_change(-1))
-        previous_button.place(relx=0.4218, rely=0.95, relwidth=0.02)
+        previous_button.place(relx=0.424, rely=0.942, relwidth=0.02)
 
         page_text_info = ctk.CTkLabel(tabs.tab(tab), text="Page          of ", font=("Helvetica", h/50), text_color="#9a4cfa")
-        page_text_info.place(in_=previous_button, relx=1.4, rely=0.2)
+        page_text_info.place(in_=previous_button, relx=1.4, rely=0.1)
 
         page_counter = ctk.CTkLabel(tabs.tab(tab), textvariable=page_counters[tab], font=("Helvetica", h/50), text_color="#9a4cfa")
         page_counter.place(in_=page_text_info, relx=0.38, rely=0, relwidth=0.4, relheight=1)
@@ -508,14 +508,14 @@ def book_collection():
         total_pages_counter.place(in_=page_text_info, relx=1, rely=0, relwidth=0.4, relheight=1)
 
         next_button = ctk.CTkButton(tabs.tab(tab), text="▶", fg_color="#9a4cfa", bg_color="#1f1f1f", hover_color="#b87bff", font=("Helvetica", h/36, "bold"), text_color="#121212", command=lambda: page_change(1))
-        next_button.place(in_=previous_button, relx=7, rely=0, relwidth=1, relheight=1)
+        next_button.place(in_=previous_button, relx=7.65, rely=0, relwidth=1, relheight=1)
 
     # Set Default Tab to Reading
     tabs.set("Reading")
 
     # Button to open Search for Adding or Removing Books
     add_btn = ctk.CTkButton(main_frame, text="+", text_color="#121212", fg_color="#9a4cfa", bg_color="#1f1f1f", hover_color="#b87bff", font=("Helvetica", h/24, "bold"), width=w/24, height=h/13.5, corner_radius=h/36, command=lambda: add_book([tabs, add_btn]))
-    add_btn.place(relx=0.919, rely=0.9)
+    add_btn.place(relx=0.91, rely=0.895)
 
     win.update()
 
@@ -616,9 +616,9 @@ def update_search(search_frame, search_term):
 
         image = create_rounded_image(io.BytesIO(raw_data), 35)
 
-        recommendation = ctk.CTkButton(search_frame, text=book["title"], font=("Helvetica", h/65, "bold"), image=ctk.CTkImage(dark_image=image, size=(w/8.53, h/4.32)), fg_color="#0f0f0f", hover_color="#1f1f1f", compound=ctk.TOP, anchor="w", width=w/8.53 + 25, height=h/4.32 + 65, command=lambda book=book: get_book(search_frame, book, search_term))
-        recommendation.bind("<Enter>", lambda event, recommendation=recommendation: start_marquee(recommendation, book["title"]+"      ", speed=150))
-        recommendation.bind("<Leave>", lambda event, recommendation=recommendation: stop_marquee(recommendation, book["title"]))
+        recommendation = ctk.CTkButton(search_frame, text=book["title"][:search_page_cap], font=("Helvetica", h/65, "bold"), image=ctk.CTkImage(dark_image=image, size=(w/8.53, h/4.32)), fg_color="#0f0f0f", hover_color="#1f1f1f", compound=ctk.TOP, anchor="w", width=w/8.53 + 25, height=h/4.32 + 65, command=lambda book=book: get_book(search_frame, book, search_term))
+        recommendation.bind("<Enter>", lambda event, recommendation=recommendation: start_marquee(False, recommendation, book["title"]+"      ", speed=150))
+        recommendation.bind("<Leave>", lambda event, recommendation=recommendation: stop_marquee(False, recommendation, book["title"]))
         try:
             thread = threading.Thread(target=lambda search_text=search_text: kill_recommendation(recommendation, search_term, search_text))
             thread.start()
