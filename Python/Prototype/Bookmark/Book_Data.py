@@ -51,7 +51,7 @@ def track_book(account_loc, book, status):
     conn.commit()
     conn.close()
 
-def read_data(account_loc, category, page_num):
+def read_data(account_loc, category, page_num, search_term=None):
 
     # Connect to User.db
     conn = sqlite3.connect(os.path.join(account_loc, "User.db"))
@@ -70,7 +70,10 @@ def read_data(account_loc, category, page_num):
     offset = (page_num-1)*limit
 
     # Request and Retrieve data from Sqlite3 database
-    cursor.execute(f"SELECT * FROM User_Data WHERE status='{category}' LIMIT {limit} OFFSET {offset}")
+    if (search_term == None) or (search_term == ""):
+        cursor.execute(f"SELECT * FROM User_Data WHERE status='{category}' LIMIT {limit} OFFSET {offset}")
+    else:
+        cursor.execute(f"SELECT * FROM User_Data WHERE status='{category}' AND (title LIKE '%{search_term}%' OR isbn10 LIKE '%{search_term}%' OR isbn13 LIKE '%{search_term}%') LIMIT {limit} OFFSET {offset}")
     retrieved_data = cursor.fetchall()       
 
     return_dict = {}
@@ -82,7 +85,7 @@ def read_data(account_loc, category, page_num):
 
     return return_dict
 
-def get_total_pages(account_loc, category):
+def get_total_pages(account_loc, category, search_term):
     
     # Connect to User.db
     conn = sqlite3.connect(os.path.join(account_loc, "User.db"))
@@ -101,4 +104,4 @@ def get_total_pages(account_loc, category):
         return total_items//limit + 1
 
 if __name__ == "__main__":
-    print(read_data(r"D:\Coding Files\Python\Prototype\Bookmark\Data\Accounts\a", "Plan to Read", 1))
+    print(len(read_data(r"D:\Repositories\Dev-Chronicles\Python\Prototype\Bookmark\Data\Accounts\a", "Reading", 1)))

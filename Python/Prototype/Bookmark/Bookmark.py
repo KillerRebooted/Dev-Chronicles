@@ -423,31 +423,31 @@ def book_collection():
     main_frame.pack(fill="both", expand=True)
 
     # Add/Update Buttons to Tab
-    def update_tab(widgets):
+    def update_tab(widgets, search_term=None):
         category = tabs.get()
 
         for widget in tabs.tab(category).winfo_children():
             if ("button" in str(widget)) and (widget.cget("text") not in ["◀", "▶"]):
                 widget.destroy()
 
-        books = read_data(account_loc, category, int(page_counters[category].get()))
+        books = read_data(account_loc, category, int(page_counters[category].get()), search_term)
 
         for book_num in range(len(books.get("id", ""))):
 
             image = create_rounded_image(io.BytesIO(books["thumbnail"][book_num]), 35)
 
-            btn = ctk.CTkButton(tabs.tab(category), text=books["title"][book_num][:home_page_cap], fg_color="#1f1f1f", hover_color="#9a4cfa", border_color="#9a4cfa", border_width=2, image=ctk.CTkImage(dark_image=image, size=(150, 125)), compound=ctk.LEFT, anchor="w", corner_radius=15, command=lambda book_num=book_num: open_book_details(widgets, books, book_num))
+            btn = ctk.CTkButton(tabs.tab(category), text=books["title"][book_num][:home_page_cap], fg_color="#1f1f1f", hover_color="#9a4cfa", border_color="#9a4cfa", border_width=2, image=ctk.CTkImage(dark_image=image, size=(150, 115)), compound=ctk.LEFT, anchor="w", corner_radius=15, command=lambda book_num=book_num: open_book_details(widgets, books, book_num))
             btn.configure(font=("Helvetica", h/32, "bold"))
             btn._text_label.configure(padx=20)
             btn.bind("<Enter>", lambda event, btn=btn, book_num=book_num: start_marquee(True, btn, books["title"][book_num]+"      ", speed=150))
             btn.bind("<Leave>", lambda event, btn=btn, book_num=book_num: stop_marquee(True, btn, books["title"][book_num]))
             
             if book_num == 0:
-                btn.place(relx=0.02, rely=0.1, relwidth=0.958, relheight=0.15)
+                btn.place(relx=0.02, rely=0.1, relwidth=0.958, relheight=0.145)
             else:
                 btn.place(in_=prev_widget, relx=0, rely=1.1, relwidth=1, relheight=1)
 
-            total_pages[category].set(str(get_total_pages(account_loc, category)))
+            total_pages[category].set(str(get_total_pages(account_loc, category, search_term)))
 
             prev_widget = btn
 
@@ -513,8 +513,21 @@ def book_collection():
     # Set Default Tab to Reading
     tabs.set("Reading")
 
+    # String Variable that keeps track of the Text in the Search Bar
+    search_term = ctk.StringVar()
+    search_term.trace_add('write', lambda var, index, mode: update_tab([tabs, add_btn], search_term=search_term.get()))
+
+    # Search Bar to Filter Books through Keywords
+    filter_search = ctk.CTkEntry(main_frame, fg_color="#1f1f1f", placeholder_text="Enter ISBN No. or Name of the Book...", textvariable=search_term)
+    filter_search.place(relx=0.5, rely=0.11, relwidth=0.45, relheight=0.06, anchor=ctk.CENTER)
+
+
+    def add_book_initiator():
+        search_term.set("")  # Clear Search Term
+        add_book([tabs, add_btn])
+
     # Button to open Search for Adding or Removing Books
-    add_btn = ctk.CTkButton(main_frame, text="+", text_color="#121212", fg_color="#9a4cfa", bg_color="#1f1f1f", hover_color="#b87bff", font=("Helvetica", h/24, "bold"), width=w/24, height=h/13.5, corner_radius=h/36, command=lambda: add_book([tabs, add_btn]))
+    add_btn = ctk.CTkButton(main_frame, text="+", text_color="#121212", fg_color="#9a4cfa", bg_color="#1f1f1f", hover_color="#b87bff", font=("Helvetica", h/24, "bold"), width=w/24, height=h/13.5, corner_radius=h/36, command=add_book_initiator)
     add_btn.place(relx=0.91, rely=0.895)
 
     win.update()
