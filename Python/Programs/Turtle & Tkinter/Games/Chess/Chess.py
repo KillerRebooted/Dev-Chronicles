@@ -35,7 +35,7 @@ def make_chess_board(size):
 
         chess_board.pd()
         
-        chess_board.fillcolor("black" if iteration%2==0 else "white")
+        chess_board.fillcolor("black" if iteration%2!=0 else "white")
         
         chess_board.begin_fill()
         for i in range(2):

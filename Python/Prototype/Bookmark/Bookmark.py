@@ -8,7 +8,6 @@ import urllib.request
 import threading
 import time
 from PIL import Image, ImageEnhance, ImageDraw
-import ctypes
 from Book_Scouter import get_book_details
 from Book_Data import track_book, read_data, get_total_pages
 

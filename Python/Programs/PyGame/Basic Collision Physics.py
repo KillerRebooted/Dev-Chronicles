@@ -4,7 +4,7 @@ from pygame.locals import *
 pg.init()
 
 h = 1080
-w = 1980
+w = 1920
 
 win = pg.display.set_mode((w, h))
 pg.display.set_caption("Pygame Collisions")
