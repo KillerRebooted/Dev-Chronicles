@@ -10,8 +10,8 @@ def intersection(a, b):
 
     return list(a+b)
 
-n1 = list(input("Enter First Name: ").lower())
-n2 = list(input("Enter Second Name: ").lower())
+n1 = list(input("Enter First Name: ").lower().strip())
+n2 = list(input("Enter Second Name: ").lower().strip())
 
 flames = {"F":"Friends", "L":"Love", "A":"Affection", "M":"Marriage", "E":"Enemy", "S":"Siblings"}
 
@@ -22,5 +22,8 @@ for _ in range(5):
     idx += count
     flames.pop(list(flames.keys())[idx%len(flames)-1])
     idx = idx%(len(flames)+1)-1
+
+    if idx < 0:
+        idx = 0
 
 print(*flames.values())
