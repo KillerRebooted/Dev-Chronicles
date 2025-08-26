@@ -27,9 +27,9 @@ driver.get("https://humanbenchmark.com/tests/sequence")
 
 driver.maximize_window()
 
-time.sleep(1)
+time.sleep(2)
 
-driver.find_element(By.XPATH, f"//button[@class='css-de05nr e19owgy710' and text()='Start']").click()
+driver.find_element(By.XPATH, f'//button[normalize-space()="Start"]').click()
 
 level = 1
 boxes = []

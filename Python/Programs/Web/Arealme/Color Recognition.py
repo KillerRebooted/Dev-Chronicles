@@ -27,9 +27,9 @@ driver.get('https://www.arealme.com/colors/en/')
 
 driver.maximize_window()
 
-time.sleep(1)
+time.sleep(2)
 
-driver.find_element(By.XPATH, f"//span[@class='content' and text()='Start']").click()
+driver.find_element(By.XPATH, f'//button[normalize-space()="Start"]').click()
 
 while True:    
 

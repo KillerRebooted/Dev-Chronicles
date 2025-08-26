@@ -27,7 +27,7 @@ driver.get('https://www.arealme.com/apm-actions-per-minute-test/en/')
 
 driver.maximize_window()
 
-time.sleep(1)
+time.sleep(2)
 
 driver.find_element(By.XPATH, f'//button[normalize-space()="Start"]').click()
 

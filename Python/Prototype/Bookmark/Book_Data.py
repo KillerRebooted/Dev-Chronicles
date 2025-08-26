@@ -95,7 +95,10 @@ def get_total_pages(account_loc, category, search_term):
     create_table(cursor)
 
     # Get total items in category
-    cursor.execute(f"SELECT COUNT(*) FROM User_Data WHERE status='{category}'")
+    if search_term:
+        cursor.execute(f"SELECT COUNT(*) FROM User_Data WHERE (status='{category}') AND (title LIKE '%{search_term}%' OR isbn10 LIKE '%{search_term}%' OR isbn13 LIKE '%{search_term}%')")
+    else:
+        cursor.execute(f"SELECT COUNT(*) FROM User_Data WHERE status='{category}'")
     total_items = cursor.fetchall()[0][0]
 
     if total_items%limit == 0:

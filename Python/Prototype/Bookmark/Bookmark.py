@@ -425,32 +425,41 @@ def book_collection():
     def update_tab(widgets, search_term=None):
         category = tabs.get()
 
-        for widget in tabs.tab(category).winfo_children():
-            if ("button" in str(widget)) and (widget.cget("text") not in ["◀", "▶"]):
-                widget.destroy()
+        if category != "Stats":
 
-        books = read_data(account_loc, category, int(page_counters[category].get()), search_term)
+            for widget in tabs.tab(category).winfo_children():
+                if ("button" in str(widget)) and (widget.cget("text") not in ["◀", "▶"]):
+                    widget.destroy()
 
-        for book_num in range(len(books.get("id", ""))):
+            books = read_data(account_loc, category, int(page_counters[category].get()), search_term)
 
-            image = create_rounded_image(io.BytesIO(books["thumbnail"][book_num]), 35)
+            for book_num in range(len(books.get("id", ""))):
 
-            btn = ctk.CTkButton(tabs.tab(category), text=books["title"][book_num][:home_page_cap], fg_color="#1f1f1f", hover_color="#9a4cfa", border_color="#9a4cfa", border_width=2, image=ctk.CTkImage(dark_image=image, size=(150, 115)), compound=ctk.LEFT, anchor="w", corner_radius=15, command=lambda book_num=book_num: open_book_details(widgets, books, book_num))
-            btn.configure(font=("Helvetica", h/32, "bold"))
-            btn._text_label.configure(padx=20)
-            btn.bind("<Enter>", lambda event, btn=btn, book_num=book_num: start_marquee(True, btn, books["title"][book_num]+"      ", speed=150))
-            btn.bind("<Leave>", lambda event, btn=btn, book_num=book_num: stop_marquee(True, btn, books["title"][book_num]))
-            
-            if book_num == 0:
-                btn.place(relx=0.02, rely=0.1, relwidth=0.958, relheight=0.145)
-            else:
-                btn.place(in_=prev_widget, relx=0, rely=1.1, relwidth=1, relheight=1)
+                image = create_rounded_image(io.BytesIO(books["thumbnail"][book_num]), 35)
 
-            total_pages[category].set(str(get_total_pages(account_loc, category, search_term)))
+                btn = ctk.CTkButton(tabs.tab(category), text=books["title"][book_num][:home_page_cap], fg_color="#1f1f1f", hover_color="#9a4cfa", border_color="#9a4cfa", border_width=2, image=ctk.CTkImage(dark_image=image, size=(150, 115)), compound=ctk.LEFT, anchor="w", corner_radius=15, command=lambda book_num=book_num: open_book_details(widgets, books, book_num))
+                btn.configure(font=("Helvetica", h/32, "bold"))
+                btn._text_label.configure(padx=20)
+                btn.bind("<Enter>", lambda event, btn=btn, book_num=book_num: start_marquee(True, btn, books["title"][book_num]+"      ", speed=150))
+                btn.bind("<Leave>", lambda event, btn=btn, book_num=book_num: stop_marquee(True, btn, books["title"][book_num]))
+                
+                if book_num == 0:
+                    btn.place(relx=0.02, rely=0.1, relwidth=0.958, relheight=0.145)
+                else:
+                    btn.place(in_=prev_widget, relx=0, rely=1.1, relwidth=1, relheight=1)
 
-            prev_widget = btn
+                total_pages[category].set(str(get_total_pages(account_loc, category, search_term)))
+
+                prev_widget = btn
 
             win.update()
+
+        else:
+
+            for widget in tabs.tab(category).winfo_children():
+                widget.destroy()
+
+            # Stats to Display
 
     # Change Page
     def page_change(change_qty):
@@ -475,7 +484,7 @@ def book_collection():
                         segmented_button_unselected_color="#2a2a2a",
                         segmented_button_selected_hover_color="#b87bff",
                         segmented_button_unselected_hover_color="#393939",
-                        command=lambda: update_tab([tabs, add_btn]))
+                        command=lambda: update_tab([tabs, add_btn], search_term.get()))
     tabs._segmented_button.configure(font=("Helvetica", h/45, "bold"))
     tabs.pack(padx=w/32, pady=h/54, fill="both", expand=True)
 
@@ -485,6 +494,7 @@ def book_collection():
     tabs.add("Completed")
     tabs.add("On Hold")
     tabs.add("Dropped")
+    tabs.add("Stats")
 
     all_tabs = ["Plan To Read", "Reading", "Completed", "On Hold", "Dropped"]
 
@@ -520,14 +530,22 @@ def book_collection():
     filter_search = ctk.CTkEntry(main_frame, fg_color="#1f1f1f", placeholder_text="Enter ISBN No. or Name of the Book...", textvariable=search_term)
     filter_search.place(relx=0.5, rely=0.11, relwidth=0.45, relheight=0.06, anchor=ctk.CENTER)
 
-
+    # Reset Search Bar and open Search Menu
     def add_book_initiator():
         search_term.set("")  # Clear Search Term
         add_book([tabs, add_btn])
 
+    # Log Out Confirmation and Execution
+    def logout():
+        pass
+
     # Button to open Search for Adding or Removing Books
     add_btn = ctk.CTkButton(main_frame, text="+", text_color="#121212", fg_color="#9a4cfa", bg_color="#1f1f1f", hover_color="#b87bff", font=("Helvetica", h/24, "bold"), width=w/24, height=h/13.5, corner_radius=h/36, command=add_book_initiator)
     add_btn.place(relx=0.91, rely=0.895)
+
+    # Log Out Button
+    logout_btn = ctk.CTkButton(main_frame, text="", text_color="#121212", fg_color="#1f1f1f", bg_color="#1f1f1f", hover_color="#2f2f2f", font=("Helvetica", h/24, "bold"), image=ctk.CTkImage(dark_image=Image.open(os.path.join(data_loc, "Images", "Log Out.png")), size=(30,30)), width=0, height=15, corner_radius=100000, command=logout)
+    logout_btn.place(relx=0.933, rely=0.045)
 
     win.update()
 

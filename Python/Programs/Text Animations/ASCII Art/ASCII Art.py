@@ -57,7 +57,6 @@ def ascii_art(image):
     for r in range(gray_array.shape[0]):
         for c in range(gray_array.shape[1]):
             pixel = gray_array[r, c]
-            #print(pixel, int((pixel/255)*len(ascii))%len(ascii))
             ascii_char = ascii[int((pixel/256)*len(ascii))%len(ascii)]
             print(ascii_char, end="")
         print()
