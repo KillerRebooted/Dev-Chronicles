@@ -1,4 +1,7 @@
 import customtkinter as ctk
+import keyring
+from argon2 import PasswordHasher
+from argon2.exceptions import VerifyMismatchError
 from time import sleep
 import json
 import hashlib
@@ -28,7 +31,7 @@ w = win.winfo_screenwidth()
 h = win.winfo_screenheight()
 
 # Center Window Method
-def center(win, screen_resolution, animation_time):
+def center(win, screen_resolution, animation_time, expand=True):
 
     x1, y1 = 0, 0
 
@@ -47,9 +50,7 @@ def center(win, screen_resolution, animation_time):
         sleep(0.008)
         win.update()
 
-
-    x1 = screen_resolution[0]
-    y1 = screen_resolution[1]
+    x1, y1 = screen_resolution
 
     win.geometry(f"{int(x1)}x{int(y1)}")
 
@@ -153,7 +154,7 @@ def login_page(first_time):
 
     if first_time:
 
-        center(win, (600, 400), 2)
+        center(win, (600, 400), 1.5)
 
         frame = ctk.CTkFrame(win, fg_color="#1f1f1f")
         frame.pack(pady=20, padx=60, fill="both", expand=True)
@@ -174,13 +175,13 @@ def login_page(first_time):
 
     if first_time:    
         
-        username = ctk.CTkEntry(frame, placeholder_text="Username", fg_color="#1f1f1f", show="", height=40, width=200)
+        username = ctk.CTkEntry(frame, placeholder_text="Username", fg_color="#1f1f1f", show="", font=("Helvetica", h/90, "bold"), height=40, width=200)
         username.pack(pady=(50, 12), padx=10)
 
         check_var = ctk.StringVar()
         check_var.set("*")
 
-        password = ctk.CTkEntry(frame, placeholder_text="Password", fg_color="#1f1f1f", show="*", height=40, width=200)
+        password = ctk.CTkEntry(frame, placeholder_text="Password", fg_color="#1f1f1f", show="*", font=("Helvetica", h/90, "bold"), height=40, width=200)
         password.pack(pady=12, padx=10)
 
         show_password = ctk.CTkButton(frame, text="", fg_color="#1f1f1f", hover_color="#191919", image=ctk.CTkImage(dark_image=Image.open(os.path.join(data_loc, "Images", "Eye Hide.png")), size=(30,30)), width=30, height=30, command=lambda: show_pass([password]))
@@ -213,7 +214,7 @@ def signup_page():
         except:
             pass
 
-    confirm_password = ctk.CTkEntry(frame, placeholder_text="Confirm Password", fg_color="#1f1f1f", show="*", height=40, width=200)
+    confirm_password = ctk.CTkEntry(frame, placeholder_text="Confirm Password", fg_color="#1f1f1f", show="*", font=("Helvetica", h/90, "bold"), height=40, width=200)
     confirm_password.pack(pady=12, padx=10)
 
     show_password.configure(command=lambda: show_pass([password, confirm_password]))
@@ -256,7 +257,7 @@ def login():
             account_loc = os.path.join(data_loc, "Accounts", user)
             
             os.makedirs(account_loc, exist_ok=True)
-            
+
             book_collection()
 
     else:
@@ -317,7 +318,7 @@ def sign_up(username_taken = False):
             sign_up(username_taken)
 
         if not username_taken:
-            os.makedirs(f"{data_loc}\\Accounts\\{user}", exist_ok=True)
+            os.makedirs(os.path.join(data_loc, "Accounts", user), exist_ok=True)
 
     else:
 
@@ -352,15 +353,15 @@ def quit_add_books(frame, widgets):
         widget.destroy()
 
     size = 0.8
-    while size >= 0.1:
+    while size >= 0:
         frame.place_configure(relwidth=size, relheight=size)
         
         win.update()
         sleep(0.001)
 
-        size -= 0.12
+        size -= 0.04
 
-    size=0.1
+    size=0
     frame.place_configure(relwidth=size, relheight=size)
 
     frame.destroy()
@@ -369,6 +370,24 @@ def quit_add_books(frame, widgets):
     # Enabling Widgets on closing Search Window
     widgets[0].configure(state="normal")
     widgets[1].configure(state="normal", fg_color="#9a4cfa")
+    widgets[2].configure(state="normal")
+    for widget in widgets[0].tab(widgets[0].get()).winfo_children():
+        if ("label" not in str(widget)) and (widget.cget("text") in ["◀", "▶"]):
+            widget.configure(state="normal", fg_color="#9a4cfa")
+        else:
+            widget.configure(state="normal")
+    win.bind("<Escape>", quit_application)
+
+# Quit Logout Confirmation
+def quit_logout_confirmation(logout_confirmation, widgets):
+
+    logout_confirmation.destroy()
+    win.unbind("<Escape>")
+
+    # Enabling Widgets on closing Search Window
+    widgets[0].configure(state="normal")
+    widgets[1].configure(state="normal", fg_color="#9a4cfa")
+    widgets[2].configure(state="normal")
     for widget in widgets[0].tab(widgets[0].get()).winfo_children():
         if ("label" not in str(widget)) and (widget.cget("text") in ["◀", "▶"]):
             widget.configure(state="normal", fg_color="#9a4cfa")
@@ -414,6 +433,7 @@ def book_collection():
     win.unbind("<Return>")
 
     center(win, (w, h), 2)
+    win.title("Application")
     win.attributes("-fullscreen", True)
     win.geometry(f"{w}x{h}+0+0")
 
@@ -471,7 +491,7 @@ def book_collection():
         if not ((new_page_count == 0) or (new_page_count > int(total_pages[category].get()))):
             page_var.set(new_page_count)
 
-        update_tab([tabs, add_btn])
+        update_tab([tabs, add_btn, logout_btn])
 
     # Create Tabular View
     tabs = ctk.CTkTabview(main_frame,
@@ -484,7 +504,7 @@ def book_collection():
                         segmented_button_unselected_color="#2a2a2a",
                         segmented_button_selected_hover_color="#b87bff",
                         segmented_button_unselected_hover_color="#393939",
-                        command=lambda: update_tab([tabs, add_btn], search_term.get()))
+                        command=lambda: update_tab([tabs, add_btn, logout_btn], search_term.get()))
     tabs._segmented_button.configure(font=("Helvetica", h/45, "bold"))
     tabs.pack(padx=w/32, pady=h/54, fill="both", expand=True)
 
@@ -524,32 +544,67 @@ def book_collection():
 
     # String Variable that keeps track of the Text in the Search Bar
     search_term = ctk.StringVar()
-    search_term.trace_add('write', lambda var, index, mode: update_tab([tabs, add_btn], search_term=search_term.get()))
+    search_term.trace_add('write', lambda var, index, mode: update_tab([tabs, add_btn, logout_btn], search_term=search_term.get()))
 
     # Search Bar to Filter Books through Keywords
-    filter_search = ctk.CTkEntry(main_frame, fg_color="#1f1f1f", placeholder_text="Enter ISBN No. or Name of the Book...", textvariable=search_term)
+    filter_search = ctk.CTkEntry(main_frame, fg_color="#1f1f1f", placeholder_text="Enter Name or ISBN No. of the Book...", font=("Helvetica", h/42, "bold"), textvariable=search_term)
     filter_search.place(relx=0.5, rely=0.11, relwidth=0.45, relheight=0.06, anchor=ctk.CENTER)
 
     # Reset Search Bar and open Search Menu
     def add_book_initiator():
         search_term.set("")  # Clear Search Term
-        add_book([tabs, add_btn])
+        add_book([tabs, add_btn, logout_btn])
 
     # Log Out Confirmation and Execution
-    def logout():
-        pass
+    def logout(widgets):
+        
+        win.unbind("<Escape>")
+
+        # Disabling Widgets to avoid complications
+        widgets[0].configure(state="disabled")
+        widgets[1].configure(state="disabled", fg_color="#3a3a3a", text_color_disabled="#777777")
+        widgets[2].configure(state="disabled")
+        for widget in widgets[0].tab(widgets[0].get()).winfo_children():
+            if ("label" not in str(widget)) and (widget.cget("text") in ["◀", "▶"]):
+                widget.configure(state="disabled", fg_color="#3a3a3a", text_color_disabled="#777777")
+            else:
+                widget.configure(state="disabled")
+
+        logout_confirmation = ctk.CTkFrame(win, bg_color="#1f1f1f", fg_color="#0f0f0f", corner_radius=h/45)
+        logout_confirmation.place(relx=0.5, rely=0.49, relheight=0.15, relwidth=0.25, anchor=ctk.CENTER)
+
+        def escape_function(logout_confirmation):
+            quit_logout_confirmation(logout_confirmation, widgets)
+            update_tab(widgets)
+
+        def return_to_login():
+            quit_logout_confirmation(logout_confirmation, widgets)
+            main_frame.destroy()
+            win.attributes("-fullscreen", False)
+            login_page(True)
+
+        win.bind("<Escape>", lambda event, logout_confirmation=logout_confirmation: escape_function(logout_confirmation))
+
+        prompt_question = ctk.CTkLabel(logout_confirmation, text="Are you sure you want to Log Out?", font=("Helvetica", h/54, "bold"), fg_color="#0f0f0f")
+        prompt_question.pack(pady=(30, 0))
+
+        prompt_yes = ctk.CTkButton(logout_confirmation, text="Yes", text_color="#121212", fg_color="#9a4cfa", hover_color="#b87bff", font=("Helvetica", h/67.5, "bold"), command=return_to_login)
+        prompt_yes.pack(side="left", padx=(50,0), pady=(5, 0))
+
+        prompt_no = ctk.CTkButton(logout_confirmation, text="No", text_color="#121212", fg_color="#9a4cfa", hover_color="#b87bff", font=("Helvetica", h/67.5, "bold"), command=lambda logout_confirmation=logout_confirmation: escape_function(logout_confirmation))
+        prompt_no.pack(side="right", padx=(0,50), pady=(5, 0))
 
     # Button to open Search for Adding or Removing Books
     add_btn = ctk.CTkButton(main_frame, text="+", text_color="#121212", fg_color="#9a4cfa", bg_color="#1f1f1f", hover_color="#b87bff", font=("Helvetica", h/24, "bold"), width=w/24, height=h/13.5, corner_radius=h/36, command=add_book_initiator)
     add_btn.place(relx=0.91, rely=0.895)
 
     # Log Out Button
-    logout_btn = ctk.CTkButton(main_frame, text="", text_color="#121212", fg_color="#1f1f1f", bg_color="#1f1f1f", hover_color="#2f2f2f", font=("Helvetica", h/24, "bold"), image=ctk.CTkImage(dark_image=Image.open(os.path.join(data_loc, "Images", "Log Out.png")), size=(30,30)), width=0, height=15, corner_radius=100000, command=logout)
+    logout_btn = ctk.CTkButton(main_frame, text="", text_color="#121212", fg_color="#1f1f1f", bg_color="#1f1f1f", hover_color="#2f2f2f", font=("Helvetica", h/24, "bold"), image=ctk.CTkImage(dark_image=Image.open(os.path.join(data_loc, "Images", "Log Out.png")), size=(30,30)), width=0, height=15, command=lambda: logout([tabs, add_btn, logout_btn]))
     logout_btn.place(relx=0.933, rely=0.045)
 
     win.update()
 
-    update_tab([tabs, add_btn])
+    update_tab([tabs, add_btn, logout_btn])
 
 # Add New Books
 def add_book(widgets, book=None, search=True):
@@ -560,32 +615,27 @@ def add_book(widgets, book=None, search=True):
     # Disabling Widgets to avoid complications
     widgets[0].configure(state="disabled")
     widgets[1].configure(state="disabled", fg_color="#3a3a3a", text_color_disabled="#777777")
+    widgets[2].configure(state="disabled")
     for widget in widgets[0].tab(widgets[0].get()).winfo_children():
         if ("label" not in str(widget)) and (widget.cget("text") in ["◀", "▶"]):
             widget.configure(state="disabled", fg_color="#3a3a3a", text_color_disabled="#777777")
         else:
             widget.configure(state="disabled")
 
-    # To check whether this function is being used by the Search Method or just to see a Saved Book
-    if search:
-        search_frame = ctk.CTkFrame(win, bg_color="#1f1f1f", fg_color="#0f0f0f", corner_radius=h/27)
-        search_frame.place(relx=0.5, rely=0.5, relheight=0.1, relwidth=0.1, anchor=ctk.CENTER)
+    search_frame = ctk.CTkFrame(win, bg_color="#1f1f1f", fg_color="#0f0f0f", corner_radius=h/27)
+    search_frame.place(relx=0.5, rely=0.5, relheight=0.1, relwidth=0.1, anchor=ctk.CENTER)
 
-        size = 0.1
-        while size <= 0.8:
-            search_frame.place_configure(relwidth=size, relheight=size)
-            
-            win.update()
-            sleep(0.008)
-
-            size += 0.12
-
-        size=0.8
+    size = 0
+    while size <= 0.8:
         search_frame.place_configure(relwidth=size, relheight=size)
-    
-    else:
-        search_frame = ctk.CTkFrame(win, bg_color="#1f1f1f", fg_color="#0f0f0f", corner_radius=h/27)
-        search_frame.place(relx=0.5, rely=0.5, relheight=0.8, relwidth=0.8, anchor=ctk.CENTER)
+        
+        win.update()
+        sleep(0.008)
+
+        size += 0.06
+
+    size=0.8
+    search_frame.place_configure(relwidth=size, relheight=size)
 
     def escape_function(search_frame):
         quit_add_books(search_frame, widgets)
