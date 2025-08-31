@@ -19,7 +19,8 @@ ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("dark-blue")
 
 data_loc = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Data")
-database_loc = os.path.join(data_loc, "Account Data Base.json")
+
+SERVICE_NAME = "Bookmark"
 
 win = ctk.CTk(fg_color="#121212")
 win.title("Login")
@@ -28,8 +29,26 @@ win.geometry("0x0")
 w = win.winfo_screenwidth()
 h = win.winfo_screenheight()
 
+# Check for removing Folders for which a User doesn't exist or remove Users for which Folders don't exist and removing Auto-Logins and Saved Passwords if necessary
+Users = keyring.get_password(SERVICE_NAME, "Users")
+if Users: Users = Users.split("\n")
+else: Users = []
+if Users:
+    for user in Users:
+        if not os.path.exists(os.path.join(data_loc, "Accounts", user)):
+            Users.remove(user)
+            keyring.delete_password(SERVICE_NAME, user)
+            if keyring.get_password(SERVICE_NAME, "Auto-Login") == user:
+                keyring.delete_password(SERVICE_NAME, "Auto-Login")
+
+    for dir in os.listdir(os.path.join(data_loc, "Accounts")):
+        if dir not in Users:
+            os.remove(os.path.join(data_loc, "Accounts", dir))
+
+    keyring.set_password(SERVICE_NAME, "Users", "\n".join(Users))
+
 # Center Window Method
-def center(win, screen_resolution, animation_time, expand=True):
+def center(win, screen_resolution, animation_time):
 
     x1, y1 = 0, 0
 
@@ -60,7 +79,6 @@ def center(win, screen_resolution, animation_time, expand=True):
     win.update()
 
 # Marquee Text Functions
-
 home_page_cap = 70
 search_page_cap = 20
 
@@ -234,7 +252,7 @@ def login():
 
         # Kind of useless (Basically useless) since App opens immediately after login
         try:
-            if PasswordHasher().verify(keyring.get_password("Bookmark", user), passw): text = "Login Successful!"; color = "#21c065"; x = 90
+            if PasswordHasher().verify(keyring.get_password(SERVICE_NAME, user), passw): text = "Login Successful!"; color = "#21c065"; x = 90
         except VerifyMismatchError:
             text = "Username or Password is Incorrect."; color = "red"; x = 92
 
@@ -271,9 +289,16 @@ def sign_up(username_taken = False):
         passw = PasswordHasher().hash(password.get())
 
         # Use Keyring to use OS Token Authentication and store passwords securely if Username is not taken
-        if not keyring.get_password("Bookmark", user):
+        if not keyring.get_password(SERVICE_NAME, user):
 
-            keyring.set_password("Bookmark", user, passw)
+            keyring.set_password(SERVICE_NAME, user, passw)
+
+            Users = keyring.get_password(SERVICE_NAME, "Users")
+            if Users:
+                Users = Users.split("\n")
+            else:
+                Users = []
+            keyring.set_password(SERVICE_NAME, "Users", "\n".join(Users + [user]))
 
             pass_notification = ctk.CTkLabel(frame, text="Registered Successfully", font=("Helvetica", 10, "bold"), text_color="#21c065", height=0, width=300)
             pass_notification.place(x=89, y=276)
@@ -384,23 +409,23 @@ def create_rounded_image(image_path, radius):
     return img
 
 # Open Saved Book Details
-def open_book_details(widgets, books, book_num):
+def open_book_details(widgets, search_term, books, book_num):
 
     # Get the specified Book and make a separate Dictionary
     book = {}
     for content_title in books.keys():
         book[content_title] = books[content_title][book_num]
 
-    add_book(widgets, book, search=False)
+    add_book(widgets, collection_search_term=search_term, book=book, search=False)
 
 # User Book Collection
 def book_collection(user):
     global update_tab
 
     # Execute Frame Destroy only if it isn't an Auto-Login
-    if not keyring.get_password("Bookmark", "Auto-Login"):
+    if not keyring.get_password(SERVICE_NAME, "Auto-Login"):
         # Set up Default Auto-Login
-        keyring.set_password("Bookmark", f"Auto-Login", user)
+        keyring.set_password(SERVICE_NAME, f"Auto-Login", user)
         frame.destroy()
     
     win.unbind("<Return>")
@@ -416,6 +441,7 @@ def book_collection(user):
 
     # Add/Update Buttons to Tab
     def update_tab(widgets, search_term=None):
+
         category = tabs.get()
 
         if category != "Stats":
@@ -424,13 +450,16 @@ def book_collection(user):
                 if ("button" in str(widget)) and (widget.cget("text") not in ["◀", "▶"]):
                     widget.destroy()
 
-            books = read_data(account_loc, category, int(page_counters[category].get()), search_term)
+            if (search_term) and (search_term.get() != "Enter Name or ISBN No. of the Book..."):
+                books = read_data(account_loc, category, int(page_counters[category].get()), search_term.get())
+            else:
+                books = read_data(account_loc, category, int(page_counters[category].get()))
 
             for book_num in range(len(books.get("id", ""))):
 
                 image = create_rounded_image(io.BytesIO(books["thumbnail"][book_num]), 35)
 
-                btn = ctk.CTkButton(tabs.tab(category), text=books["title"][book_num][:home_page_cap], fg_color="#1f1f1f", hover_color="#9a4cfa", border_color="#9a4cfa", border_width=2, image=ctk.CTkImage(dark_image=image, size=(150, 115)), compound=ctk.LEFT, anchor="w", corner_radius=15, command=lambda book_num=book_num: open_book_details(widgets, books, book_num))
+                btn = ctk.CTkButton(tabs.tab(category), text=books["title"][book_num][:home_page_cap], fg_color="#1f1f1f", hover_color="#9a4cfa", border_color="#9a4cfa", border_width=2, image=ctk.CTkImage(dark_image=image, size=(150, 115)), compound=ctk.LEFT, anchor="w", corner_radius=15, command=lambda search_term=search_term, book_num=book_num: open_book_details(widgets, search_term, books, book_num))
                 btn.configure(font=("Helvetica", h/32, "bold"))
                 btn._text_label.configure(padx=20)
                 btn.bind("<Enter>", lambda event, btn=btn, book_num=book_num: start_marquee(True, btn, books["title"][book_num]+"      ", speed=150))
@@ -441,7 +470,10 @@ def book_collection(user):
                 else:
                     btn.place(in_=prev_widget, relx=0, rely=1.1, relwidth=1, relheight=1)
 
-                total_pages[category].set(str(get_total_pages(account_loc, category, search_term)))
+                if search_term:
+                    total_pages[category].set(str(get_total_pages(account_loc, category, search_term.get())))
+                else:
+                    total_pages[category].set(str(get_total_pages(account_loc, category, None)))
 
                 prev_widget = btn
 
@@ -517,16 +549,16 @@ def book_collection(user):
 
     # String Variable that keeps track of the Text in the Search Bar
     search_term = ctk.StringVar()
-    search_term.trace_add('write', lambda var, index, mode: update_tab([tabs, add_btn, logout_btn], search_term=search_term.get()))
+    search_term.trace_add('write', lambda var, index, mode: update_tab([tabs, add_btn, logout_btn], search_term=search_term))
 
     # Search Bar to Filter Books through Keywords
-    filter_search = ctk.CTkEntry(main_frame, fg_color="#1f1f1f", placeholder_text="Enter Name or ISBN No. of the Book...", font=("Helvetica", h/42, "bold"), textvariable=search_term)
+    filter_search = ctk.CTkEntry(main_frame, text_color="#818181", fg_color="#1f1f1f", font=("Helvetica", h/42, "bold"), textvariable=search_term)
     filter_search.place(relx=0.5, rely=0.11, relwidth=0.45, relheight=0.06, anchor=ctk.CENTER)
 
     # Reset Search Bar and open Search Menu
     def add_book_initiator():
-        search_term.set("")  # Clear Search Term
-        add_book([tabs, add_btn, logout_btn])
+        #search_term.set("")  # Clear Search Term
+        add_book([tabs, add_btn, logout_btn], collection_search_term=search_term)
 
     # Log Out Confirmation and Execution
     def logout(widgets):
@@ -554,7 +586,7 @@ def book_collection(user):
             quit_logout_confirmation(logout_confirmation, widgets)
             main_frame.destroy()
             win.attributes("-fullscreen", False)
-            keyring.delete_password("Bookmark", "Auto-Login")
+            keyring.delete_password(SERVICE_NAME, "Auto-Login")
             login_page(True)
 
         win.bind("<Escape>", lambda event, logout_confirmation=logout_confirmation: escape_function(logout_confirmation))
@@ -576,12 +608,15 @@ def book_collection(user):
     logout_btn = ctk.CTkButton(main_frame, text="", text_color="#121212", fg_color="#1f1f1f", bg_color="#1f1f1f", hover_color="#2f2f2f", font=("Helvetica", h/24, "bold"), image=ctk.CTkImage(dark_image=Image.open(os.path.join(data_loc, "Images", "Log Out.png")), size=(30,30)), width=0, height=15, command=lambda: logout([tabs, add_btn, logout_btn]))
     logout_btn.place(relx=0.933, rely=0.045)
 
+    search_term.set("Enter Name or ISBN No. of the Book...")
+    filter_search.bind("<FocusIn>", lambda event: [filter_search.configure(text_color="#FFFFFF"), search_term.set("")])
+
     win.update()
 
     update_tab([tabs, add_btn, logout_btn])
 
 # Add New Books
-def add_book(widgets, book=None, search=True):
+def add_book(widgets, collection_search_term=None, book=None, search=True):
     global saved_widgets, search_bar
 
     win.unbind("<Escape>")
@@ -611,11 +646,11 @@ def add_book(widgets, book=None, search=True):
     size=0.8
     search_frame.place_configure(relwidth=size, relheight=size)
 
-    def escape_function(search_frame):
+    def escape_function(search_frame, collection_search_term):
         quit_add_books(search_frame, widgets)
-        update_tab(widgets)
+        update_tab(widgets, collection_search_term)
 
-    win.bind("<Escape>", lambda event, search_frame=search_frame: escape_function(search_frame))
+    win.bind("<Escape>", lambda event, search_frame=search_frame, collection_search_term=collection_search_term: escape_function(search_frame, collection_search_term))
 
     if search:
         # String Variable that keeps track of the Text in the search_bar
@@ -623,8 +658,11 @@ def add_book(widgets, book=None, search=True):
         search_term.trace_add('write', lambda var, index, mode: run_thread(search_frame, search_term))
 
         # Search Bar has no Placeholder Text since Textvariable used, a bug in CustomTkinter
-        search_bar = ctk.CTkEntry(search_frame, fg_color="#1f1f1f", placeholder_text="Enter ISBN No. or Name of the Book...", textvariable=search_term)
+        search_bar = ctk.CTkEntry(search_frame, text_color="#818181", fg_color="#1f1f1f", textvariable=search_term)
         search_bar.place(relx=0.48, rely=0.1, relwidth=0.45, relheight=0.06, anchor=ctk.CENTER)
+
+        search_term.set("Enter Name or ISBN No. of the Book...")
+        search_bar.bind("<FocusIn>", lambda event: [search_bar.configure(text_color="#FFFFFF"), search_term.set("")])
 
         saved_widgets = [search_bar]
 
@@ -636,8 +674,9 @@ def add_book(widgets, book=None, search=True):
 # Run threads to run searches
 def run_thread(search_frame, search_term):
 
-    thread = threading.Thread(target=lambda: update_search(search_frame, search_term))
-    thread.start()
+    if search_term.get() != "Enter Name or ISBN No. of the Book...":
+        thread = threading.Thread(target=lambda: update_search(search_frame, search_term))
+        thread.start()
 
 # Remove outdated recommendations from screen
 def kill_recommendation(recommendation, search_term, search_text):
@@ -824,10 +863,10 @@ def main():
 
     win.resizable(False, False)
     
-    if not keyring.get_password("Bookmark", "Auto-Login"):
+    if not keyring.get_password(SERVICE_NAME, "Auto-Login"):
         login_page(True)
     else:
-        user = keyring.get_password("Bookmark", "Auto-Login")
+        user = keyring.get_password(SERVICE_NAME, "Auto-Login")
         account_loc = os.path.join(data_loc, "Accounts", user)
         book_collection(user)
 
