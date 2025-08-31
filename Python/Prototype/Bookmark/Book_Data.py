@@ -107,4 +107,4 @@ def get_total_pages(account_loc, category, search_term):
         return total_items//limit + 1
 
 if __name__ == "__main__":
-    print(len(read_data(r"D:\Repositories\Dev-Chronicles\Python\Prototype\Bookmark\Data\Accounts\a", "Reading", 1)))
+    print(read_data(r"D:\Repositories\Dev-Chronicles\Python\Prototype\Bookmark\Data\Accounts\a", "Reading", 1))

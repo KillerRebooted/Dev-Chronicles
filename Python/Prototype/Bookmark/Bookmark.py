@@ -7,6 +7,7 @@ import os
 import io
 import urllib.request
 import threading
+import shutil
 import time
 from PIL import Image, ImageEnhance, ImageDraw
 from Book_Scouter import get_book_details
@@ -33,19 +34,19 @@ h = win.winfo_screenheight()
 Users = keyring.get_password(SERVICE_NAME, "Users")
 if Users: Users = Users.split("\n")
 else: Users = []
-if Users:
-    for user in Users:
-        if not os.path.exists(os.path.join(data_loc, "Accounts", user)):
-            Users.remove(user)
-            keyring.delete_password(SERVICE_NAME, user)
-            if keyring.get_password(SERVICE_NAME, "Auto-Login") == user:
-                keyring.delete_password(SERVICE_NAME, "Auto-Login")
 
-    for dir in os.listdir(os.path.join(data_loc, "Accounts")):
-        if dir not in Users:
-            os.remove(os.path.join(data_loc, "Accounts", dir))
+for user in Users:
+    if not os.path.exists(os.path.join(data_loc, "Accounts", user, "User.db")):
+        Users.remove(user)
+        keyring.delete_password(SERVICE_NAME, user)
+        if keyring.get_password(SERVICE_NAME, "Auto-Login") == user:
+            keyring.delete_password(SERVICE_NAME, "Auto-Login")
 
-    keyring.set_password(SERVICE_NAME, "Users", "\n".join(Users))
+for dir in os.listdir(os.path.join(data_loc, "Accounts")):
+    if dir not in Users:
+        shutil.rmtree(os.path.join(data_loc, "Accounts", dir))
+
+keyring.set_password(SERVICE_NAME, "Users", "\n".join(Users))
 
 # Center Window Method
 def center(win, screen_resolution, animation_time):
@@ -253,7 +254,7 @@ def login():
         # Kind of useless (Basically useless) since App opens immediately after login
         try:
             if PasswordHasher().verify(keyring.get_password(SERVICE_NAME, user), passw): text = "Login Successful!"; color = "#21c065"; x = 90
-        except VerifyMismatchError:
+        except:
             text = "Username or Password is Incorrect."; color = "red"; x = 92
 
         pass_notification = ctk.CTkLabel(frame, text=text, font=("Helvetica", 10, "bold"), text_color=color, height=0, width=300)
