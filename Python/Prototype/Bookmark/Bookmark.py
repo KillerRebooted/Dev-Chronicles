@@ -3,8 +3,6 @@ import keyring
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
 from time import sleep
-import json
-import hashlib
 import os
 import io
 import urllib.request
@@ -229,24 +227,16 @@ def login():
 
     global pass_notification, account_loc
 
-    try:
-
-        with open(database_loc, "r") as f:
-
-            database = json.load(f)
-
-    except:
-
-        database = ""
-
     if (username.get() != "") and (password.get() != ""):
 
         user = username.get()
-        passw = hashlib.sha256(password.get().encode()).hexdigest()
+        passw = password.get()
 
         # Kind of useless (Basically useless) since App opens immediately after login
-        if (user in database) and (database[user] == passw): text = "Login Successful!"; color = "#21c065"; x = 90
-        else: text = "Username or Password is Incorrect."; color = "red"; x = 92
+        try:
+            if PasswordHasher().verify(keyring.get_password("Bookmark", user), passw): text = "Login Successful!"; color = "#21c065"; x = 90
+        except VerifyMismatchError:
+            text = "Username or Password is Incorrect."; color = "red"; x = 92
 
         pass_notification = ctk.CTkLabel(frame, text=text, font=("Helvetica", 10, "bold"), text_color=color, height=0, width=300)
         pass_notification.place(x=x, y=212)
@@ -258,7 +248,7 @@ def login():
             
             os.makedirs(account_loc, exist_ok=True)
 
-            book_collection()
+            book_collection(user)
 
     else:
 
@@ -278,34 +268,12 @@ def sign_up(username_taken = False):
     if (password.get() == confirm_password.get()) and (password.get() != "" and confirm_password.get() != "" and username.get() != "") and (not username_taken):
 
         user = username.get()
-        passw = hashlib.sha256(password.get().encode()).hexdigest()
+        passw = PasswordHasher().hash(password.get())
 
-        if not os.path.exists(database_loc): 
-            
-            with open(database_loc, 'w+') as f: pass
+        # Use Keyring to use OS Token Authentication and store passwords securely if Username is not taken
+        if not keyring.get_password("Bookmark", user):
 
-        with open(database_loc, "r") as f:
-            
-            try: database = json.load(f)
-            except: database = ""
-        
-        if database == "":
-            
-            dict = {user: passw}
-
-            with open(database_loc, "w+") as f: json.dump(dict, f, indent=4)
-
-            pass_notification = ctk.CTkLabel(frame, text="Registered Successfully", font=("Helvetica", 10, "bold"), text_color="#21c065", height=0, width=300)
-            pass_notification.place(x=89, y=276)
-
-            frame.after(5000, pass_notification.destroy)
-
-        elif user not in database:
-
-            dict = database
-            dict[user] = passw
-
-            with open(database_loc, "w+") as f: json.dump(dict, f, indent=4)
+            keyring.set_password("Bookmark", user, passw)
 
             pass_notification = ctk.CTkLabel(frame, text="Registered Successfully", font=("Helvetica", 10, "bold"), text_color="#21c065", height=0, width=300)
             pass_notification.place(x=89, y=276)
@@ -313,7 +281,7 @@ def sign_up(username_taken = False):
             frame.after(5000, pass_notification.destroy)
 
         else:
-
+            
             username_taken = True
             sign_up(username_taken)
 
@@ -426,10 +394,15 @@ def open_book_details(widgets, books, book_num):
     add_book(widgets, book, search=False)
 
 # User Book Collection
-def book_collection():
+def book_collection(user):
     global update_tab
 
-    frame.destroy()
+    # Execute Frame Destroy only if it isn't an Auto-Login
+    if not keyring.get_password("Bookmark", "Auto-Login"):
+        # Set up Default Auto-Login
+        keyring.set_password("Bookmark", f"Auto-Login", user)
+        frame.destroy()
+    
     win.unbind("<Return>")
 
     center(win, (w, h), 2)
@@ -581,6 +554,7 @@ def book_collection():
             quit_logout_confirmation(logout_confirmation, widgets)
             main_frame.destroy()
             win.attributes("-fullscreen", False)
+            keyring.delete_password("Bookmark", "Auto-Login")
             login_page(True)
 
         win.bind("<Escape>", lambda event, logout_confirmation=logout_confirmation: escape_function(logout_confirmation))
@@ -846,10 +820,16 @@ def get_book(search_frame, book, search_term=None):
     win.bind("<Motion>", check_hover)
 
 def main():
+    global account_loc
 
     win.resizable(False, False)
     
-    login_page(True)
+    if not keyring.get_password("Bookmark", "Auto-Login"):
+        login_page(True)
+    else:
+        user = keyring.get_password("Bookmark", "Auto-Login")
+        account_loc = os.path.join(data_loc, "Accounts", user)
+        book_collection(user)
 
     win.bind("<Escape>", quit_application)
 
