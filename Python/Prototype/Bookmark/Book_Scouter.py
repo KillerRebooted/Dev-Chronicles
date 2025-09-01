@@ -17,17 +17,30 @@ def get_book_details(search):
 
         # Get useful details about the book from the response.json()
 
-        titles = [book["volumeInfo"].get("title") for book in response["items"]]
-        ids = [book["id"] for book in response["items"]]
-        authors = [book["volumeInfo"].get("authors", "") for book in response["items"]]
-        publishers = [book["volumeInfo"].get("publisher", "") for book in response["items"]]
-        publish_dates = [book["volumeInfo"].get("publishedDate", "") for book in response["items"]]
-        descriptions = [book["volumeInfo"].get("description", "") for book in response["items"]]
-        page_counts = [book["volumeInfo"].get("pageCount", "") for book in response["items"]]
-        categories = [book["volumeInfo"].get("categories", "") for book in response["items"]]
-        maturity_ratings = ["Intended for a Mature Audience" if book["volumeInfo"].get("maturityRating", "")=="MATURE" else "Suitable for All Ages" for book in response["items"]]
-        language = [get_language_name(book["volumeInfo"].get("language", "")) for book in response["items"]]
+        resp = response["items"]
+
+        titles = [book["volumeInfo"].get("title") for book in resp]
+        ids = [book["id"] for book in resp]
+        authors = [book["volumeInfo"].get("authors", "") for book in resp]
+        publishers = [book["volumeInfo"].get("publisher", "") for book in resp]
+        publish_dates = [book["volumeInfo"].get("publishedDate", "") for book in resp]
+        descriptions = [book["volumeInfo"].get("description", "") for book in resp]
+        categories = [book["volumeInfo"].get("categories", "") for book in resp]
+        maturity_ratings = ["Intended for a Mature Audience" if book["volumeInfo"].get("maturityRating", "")=="MATURE" else "Suitable for All Ages" for book in resp]
+        language = [get_language_name(book["volumeInfo"].get("language", "")) for book in resp]
         thumbnails = [f"https://books.google.com/books/publisher/content/images/frontcover/{id}?fife=w1920-h1080&source=gbs_api" for id in ids]
+
+        # Getting Page Count from Google Books API Website in case Response doesn't have it
+        page_counts = []
+        for book in resp:
+            page_count = book["volumeInfo"].get("pageCount", "")
+            if page_count in (0, ""):
+                try:
+                    info_link_content = str(requests.get(book["volumeInfo"].get("infoLink", "")).content)
+                    page_count = info_link_content[info_link_content[:info_link_content.find("pages")].rfind(">")+1:info_link_content.find("pages")-1]
+                except:
+                    page_count = ""
+            page_counts.append(page_count)
 
         isbn10 = []
         isbn13 = []
@@ -64,6 +77,6 @@ def get_book_details(search):
     return get_details(response)
 
 if __name__ == "__main__":
-    
+
     print(get_book_details("9781974742943"))
     #print(get_book_details("one punch man"))

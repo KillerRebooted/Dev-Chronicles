@@ -1,7 +1,6 @@
 import customtkinter as ctk
 import keyring
 from argon2 import PasswordHasher
-from argon2.exceptions import VerifyMismatchError
 from time import sleep
 import os
 import io
@@ -11,7 +10,7 @@ import shutil
 import time
 from PIL import Image, ImageEnhance, ImageDraw
 from Book_Scouter import get_book_details
-from Book_Data import track_book, read_data, get_total_pages
+from Book_Data import longest_completed, track_book, read_data, get_total_pages, total_stats
 
 # Ignores DPI scaling to work in Full Screen for all Systems
 ctk.deactivate_automatic_dpi_awareness()
@@ -366,10 +365,13 @@ def quit_add_books(frame, widgets):
     widgets[1].configure(state="normal", fg_color="#9a4cfa")
     widgets[2].configure(state="normal")
     for widget in widgets[0].tab(widgets[0].get()).winfo_children():
-        if ("label" not in str(widget)) and (widget.cget("text") in ["◀", "▶"]):
-            widget.configure(state="normal", fg_color="#9a4cfa")
-        else:
-            widget.configure(state="normal")
+        try:
+            if ("label" not in str(widget)) and (widget.cget("text") in ["◀", "▶"]):
+                widget.configure(state="normal", fg_color="#9a4cfa")
+            else:
+                widget.configure(state="normal")
+        except:
+            pass
     win.bind("<Escape>", quit_application)
 
 # Quit Logout Confirmation
@@ -447,6 +449,8 @@ def book_collection(user):
 
         if category != "Stats":
 
+            filter_search.place(relx=0.5, rely=0.11, relwidth=0.45, relheight=0.06, anchor=ctk.CENTER)
+
             for widget in tabs.tab(category).winfo_children():
                 if ("button" in str(widget)) and (widget.cget("text") not in ["◀", "▶"]):
                     widget.destroy()
@@ -471,7 +475,7 @@ def book_collection(user):
                 else:
                     btn.place(in_=prev_widget, relx=0, rely=1.1, relwidth=1, relheight=1)
 
-                if search_term:
+                if (search_term) and (search_term.get() != "Enter Name or ISBN No. of the Book..."):
                     total_pages[category].set(str(get_total_pages(account_loc, category, search_term.get())))
                 else:
                     total_pages[category].set(str(get_total_pages(account_loc, category, None)))
@@ -482,10 +486,43 @@ def book_collection(user):
 
         else:
 
+            filter_search.place_forget()
+
             for widget in tabs.tab(category).winfo_children():
                 widget.destroy()
 
             # Stats to Display
+            reading_stat = total_stats(account_loc, "Reading")
+            completed_stat = total_stats(account_loc, "Completed")
+            planned_stat = total_stats(account_loc, "Plan To Read")
+
+            reading_frame = ctk.CTkFrame(tabs.tab(category), fg_color="#1f1f1f", corner_radius=h/108, border_width=h/540, border_color="#9a4cfa")
+            reading_frame.place(relx=0.024, rely=0.1, relwidth=0.3, relheight=0.55)
+
+            completed_frame = ctk.CTkFrame(tabs.tab(category), fg_color="#1f1f1f", corner_radius=h/108, border_width=h/540, border_color="#9a4cfa")
+            completed_frame.place(in_=reading_frame, relx=1.09, rely=0, relwidth=1, relheight=1)
+
+            planned_frame = ctk.CTkFrame(tabs.tab(category), fg_color="#1f1f1f", corner_radius=h/108, border_width=h/540, border_color="#9a4cfa")
+            planned_frame.place(in_=completed_frame, relx=1.09, rely=0, relwidth=1, relheight=1)
+
+            longest_completed_book = longest_completed(account_loc)
+
+            if longest_completed_book:
+
+                image = create_rounded_image(io.BytesIO(longest_completed_book["thumbnail"][0]), 35)
+
+                btn = ctk.CTkButton(tabs.tab(category), text=longest_completed_book["title"][0][:home_page_cap], fg_color="#1f1f1f", hover_color="#9a4cfa", border_color="#9a4cfa", border_width=2, image=ctk.CTkImage(dark_image=image, size=(150, 115)), compound=ctk.LEFT, anchor="w", corner_radius=h/108, command=lambda search_term=search_term: open_book_details(widgets, search_term, longest_completed_book, 0))
+                btn.configure(font=("Helvetica", h/32, "bold"))
+                btn._text_label.configure(padx=20)
+                btn.bind("<Enter>", lambda event, btn=btn: start_marquee(True, btn, longest_completed_book["title"][0]+"      ", speed=150))
+                btn.bind("<Leave>", lambda event, btn=btn: stop_marquee(True, btn, longest_completed_book["title"][0]))
+
+                btn.place(relx=0.5, rely=0.78, relwidth=0.958, relheight=0.145, anchor=ctk.CENTER)
+
+            else:
+
+                info = ctk.CTkLabel(tabs.tab(category), text="No Completed Books Yet", font=("Helvetica", h/18, "bold"), text_color="#818181")
+                info.place(relx=0.5, rely=0.77, relwidth=0.958, relheight=0.145, anchor=ctk.CENTER)
 
     # Change Page
     def page_change(change_qty):
@@ -510,7 +547,7 @@ def book_collection(user):
                         segmented_button_unselected_color="#2a2a2a",
                         segmented_button_selected_hover_color="#b87bff",
                         segmented_button_unselected_hover_color="#393939",
-                        command=lambda: update_tab([tabs, add_btn, logout_btn], search_term.get()))
+                        command=lambda: update_tab([tabs, add_btn, logout_btn], search_term))
     tabs._segmented_button.configure(font=("Helvetica", h/45, "bold"))
     tabs.pack(padx=w/32, pady=h/54, fill="both", expand=True)
 
@@ -627,10 +664,13 @@ def add_book(widgets, collection_search_term=None, book=None, search=True):
     widgets[1].configure(state="disabled", fg_color="#3a3a3a", text_color_disabled="#777777")
     widgets[2].configure(state="disabled")
     for widget in widgets[0].tab(widgets[0].get()).winfo_children():
-        if ("label" not in str(widget)) and (widget.cget("text") in ["◀", "▶"]):
-            widget.configure(state="disabled", fg_color="#3a3a3a", text_color_disabled="#777777")
-        else:
-            widget.configure(state="disabled")
+        try: 
+            if ("label" not in str(widget)) and (widget.cget("text") in ["◀", "▶"]):
+                widget.configure(state="disabled", fg_color="#3a3a3a", text_color_disabled="#777777")
+            else:
+                widget.configure(state="disabled")
+        except:
+            pass
 
     search_frame = ctk.CTkFrame(win, bg_color="#1f1f1f", fg_color="#0f0f0f", corner_radius=h/27)
     search_frame.place(relx=0.5, rely=0.5, relheight=0.1, relwidth=0.1, anchor=ctk.CENTER)

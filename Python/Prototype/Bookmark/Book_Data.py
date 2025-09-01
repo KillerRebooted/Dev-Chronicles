@@ -106,5 +106,53 @@ def get_total_pages(account_loc, category, search_term):
     else:
         return total_items//limit + 1
 
+def total_stats(account_loc, category):
+    # Connect to User.db
+    conn = sqlite3.connect(os.path.join(account_loc, "User.db"))
+    cursor = conn.cursor()
+
+    # Create Table
+    create_table(cursor)
+
+    # Get Total Books in category
+    cursor.execute(f"SELECT COUNT(*) FROM User_Data WHERE status='{category}'")
+    books = cursor.fetchall()[0][0]
+
+    # Get Total Pages in category
+    cursor.execute(f"SELECT SUM(page_count) FROM User_Data WHERE status='{category}'")
+    total_pages = cursor.fetchall()[0][0]
+
+    if total_pages is None:
+        total_pages = 0
+
+    conn.close()
+
+    return {"books": books, "pages": total_pages}
+
+def longest_completed(account_loc):
+    # Connect to User.db
+    conn = sqlite3.connect(os.path.join(account_loc, "User.db"))
+    cursor = conn.cursor()
+
+    # Create Table
+    create_table(cursor)
+
+    # Get Table Description
+    cursor.execute("PRAGMA table_info(User_Data)")
+
+    # Get column names
+    columns = [description[1] for description in cursor.fetchall()]
+
+    # Get Longest Completed Book
+    cursor.execute(f"SELECT * FROM User_Data WHERE status='Completed' AND page_count = (SELECT MAX(page_count) FROM User_Data WHERE status='Completed')")
+    longest_book = cursor.fetchall()
+
+    conn.close()
+
+    if longest_book:
+        return {columns[i]: [longest_book[0][i]] for i in range(len(columns))}
+    else:
+        return None
+
 if __name__ == "__main__":
     print(read_data(r"D:\Repositories\Dev-Chronicles\Python\Prototype\Bookmark\Data\Accounts\a", "Reading", 1))
