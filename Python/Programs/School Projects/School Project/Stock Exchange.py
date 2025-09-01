@@ -30,6 +30,8 @@ import time
 from mpl_finance import search_from_name, get_ticker_details, make_graph
 from buy_sell import record_transaction, create_portfolio
 
+ctk.deactivate_automatic_dpi_awareness()
+
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("dark-blue")
 
@@ -64,7 +66,7 @@ def center(win, screen_resolution, animation_time):
 
     x1, y1 = 0, 0
 
-    while x1 != screen_resolution[0] or y1 != screen_resolution[1]:
+    while (x1 < screen_resolution[0]) or (y1 < screen_resolution[1]):
 
         if x1 != screen_resolution[0]: x1 += screen_resolution[0]/(animation_time*10)
         if y1 != screen_resolution[1]: y1 += screen_resolution[1]/(animation_time*10)
@@ -78,6 +80,17 @@ def center(win, screen_resolution, animation_time):
 
         sleep(0.008)
         win.update()
+
+    x1, y1 = screen_resolution
+
+    win.geometry(f"{int(x1)}x{int(y1)}")
+
+    x2 = w//2 - win.winfo_width()//2
+    y2 = h//2 - win.winfo_height()//2
+
+    win.geometry(f"+{x2}+{y2}")
+
+    win.update()
 
 # Login and Sign Up Functions
 
@@ -485,7 +498,7 @@ def get_stock(search, search_term, ticker, security_name, period="6mo"):
     graph = make_graph(ticker, period, "1d")
 
     bg = ctk.CTkLabel(search, text="", fg_color="#0f0f0f")
-    bg.place(relx=0.00, rely=0.15, relwidth=0.6, relheight=0.8)
+    bg.place(relx=0.00, rely=0.15, relwidth=0.6, relheight=0.75)
 
     ticker_details = get_ticker_details(ticker)
 
@@ -500,7 +513,7 @@ def get_stock(search, search_term, ticker, security_name, period="6mo"):
     text_widget = ctk.CTkTextbox(search, font=("Helvetica", h/67.5, "bold"), fg_color="#0f0f0f", wrap=ctk.WORD)
     text_widget.insert(ctk.END, text)
     text_widget.configure(state=ctk.DISABLED)
-    text_widget.place(in_=bg, relx=0.95, rely=0.1, relheight=1, relwidth=0.6)
+    text_widget.place(in_=bg, relx=0.95, rely=0.11, relheight=0.9, relwidth=0.6)
     
     text_widget.tag_config("link", underline=1, foreground="#3366CC")
     
@@ -525,7 +538,7 @@ def get_stock(search, search_term, ticker, security_name, period="6mo"):
     buy = ctk.CTkButton(search, text="BUY", font=("Helvetica", h/45, "bold"), border_color="#32CD32", border_width=2, fg_color="#0f0f0f", hover_color="#32CD32", cursor="hand2", command=lambda: record_transaction(data_loc, user, "buy", ticker, quantity.get()))
     sell = ctk.CTkButton(search, text="SELL", font=("Helvetica", h/45, "bold"), border_color="#D32F2F", border_width=2, fg_color="#0f0f0f", hover_color="#D32F2F", cursor="hand2", command=lambda: record_transaction(data_loc, user, "sell", ticker, quantity.get()))
 
-    buy.place(in_=bg, relx=0.26, rely=0.92, relheight=0.08, relwidth=0.2)
+    buy.place(in_=bg, relx=0.26, rely=0.94, relheight=0.08, relwidth=0.2)
     sell.place(in_=buy, relx=1.75, rely=0, relheight=1, relwidth=1)
 
     # Validation Command
@@ -535,7 +548,7 @@ def get_stock(search, search_term, ticker, security_name, period="6mo"):
     validation_command = win.register(vcmd)
 
     quantity = ctk.CTkEntry(search, font=("Helvetica", h/67.5, "bold"), justify="center", fg_color="#1f1f1f", validate="key", validatecommand=(validation_command, "%S"))
-    quantity.place(in_=buy, relx=1.15, rely=0.35, relheight=0.5, relwidth=0.5)
+    quantity.place(in_=buy, relx=1.13, rely=0.35, relheight=0.5, relwidth=0.5)
 
     quantity_text = ctk.CTkLabel(search, text="Quantity", font=("Helvetica", h/67.5, "bold"), justify="center")
     quantity_text.place(in_=quantity, relx=0, rely=-0.75, relheight=0.55, relwidth=1)
