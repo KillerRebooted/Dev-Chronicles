@@ -40,7 +40,7 @@ def get_book_details(search):
                     page_count = info_link_content[info_link_content[:info_link_content.find("pages")].rfind(">")+1:info_link_content.find("pages")-1]
                 except:
                     page_count = ""
-            page_counts.append(page_count)
+            page_counts.append(str(page_count))
 
         isbn10 = []
         isbn13 = []
@@ -78,5 +78,5 @@ def get_book_details(search):
 
 if __name__ == "__main__":
 
-    print(get_book_details("9781974742943"))
+    print(get_book_details("9781974722907"))
     #print(get_book_details("one punch man"))
