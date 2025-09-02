@@ -3,8 +3,6 @@
 void main() {
     int age;
 
-    printf("Enter your Age: ");
-    scanf("%d", &age);
-    printf("Your Age is: %d\n", age);
+    printf("%d\n", age + 5);
 
 }
