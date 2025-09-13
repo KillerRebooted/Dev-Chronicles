@@ -1,8 +1,8 @@
 #include <stdio.h>
+#include <ctype.h>
 
 void main() {
-    int age;
-
-    printf("%d\n", age + 5);
-
+    float a;
+    scanf("%f", &a);
+    printf("%f\n", a);
 }
