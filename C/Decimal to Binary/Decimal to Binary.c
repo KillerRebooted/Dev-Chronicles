@@ -1,20 +1,27 @@
 #include <stdio.h>
-#include <math.h>
 
 void main() {
-    int decimal;
-    float binary = 0;
+    float n;
+    int arr[16] = {0};
+    scanf("%f", &n);
+    int I = n;
+    float fI = n - I;
 
-    printf("Enter a Non Negative Integer to be converted to Binary: ");
-    scanf("%i", &decimal);
-
-    int temp = decimal;
-
-    int n = ceil(log(decimal)/log(2));
-    for (int i = 0; i < n+1; i++) {
-        binary = binary/10 + temp%2;
-        temp /= 2;
+    for (int i = 7; i >= 0; i--) {
+        arr[i] = I % 2;
+        I /= 2;
+        if (I == 0)
+            break;
     }
 
-    printf("%i is %i in Binary", decimal, (int)(binary*pow(10, n-1)));
+    for (int i = 8; i <= 15; i++) {
+        arr[i] = 2 * fI;
+        fI = 2 * fI - arr[i];
+    }
+
+    for (int i = 0; i <= 15; i++) {
+        printf("%d", arr[i]);
+        if (i == 7)
+            printf(".");
+    }
 }
