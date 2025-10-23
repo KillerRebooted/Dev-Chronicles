@@ -9,24 +9,24 @@ double power(double n, int x) {
     return n*power(n, x-1);
 }
 
-long int factorial(int n) {
+double factorial(int n) {
     if (n == 1 || n == 0) {
         return 1;
     }
-    return n*factorial(n-1);
+    return (double)n*factorial(n-1);
 }
 
 double sine(double x, int n) {
     if (n == 0)
         return 0;
-    double term = power(-1, n+1)*power(x, 2*n-1)/factorial(2*n-1);
+    double term = power(-1, n+1)*(power(x, 2*n-1)/factorial(2*n-1));
     return term + sine(x, n-1);
 }
 
 double cosine(double x, int n) {
     if (n == 0)
         return 0;
-    double term = power(-1, n+1)*power(x, 2*n-2)/factorial(2*n-2);
+    double term = power(-1, n+1)*(power(x, 2*n-2)/factorial(2*n-2));
     return term + cosine(x, n-1);
 }
 
@@ -35,6 +35,6 @@ double taylor_sum(double x, int n) {
 }
 
 void main() {
-    double n = 13, x = (M_PI/6);
+    double n = 100, x = (3*M_PI/2);
     printf("sin(%lf) = %lf, cos(%lf) = %lf, sin(%lf)+cos(%lf) = %lf", x, sine(x, n), x, cosine(x, n), x, x, taylor_sum(x, n));
 }
