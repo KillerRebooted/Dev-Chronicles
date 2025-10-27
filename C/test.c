@@ -1,38 +1,41 @@
-# include <stdio.h>
+#include <stdio.h>
 
-int main ()
-{
-    int n , k , protect = 0;
-    scanf("%d %d", &n , &k);
-
-    char s[n];
-    for (int a = 0 ; a <= n-1 ; a++)
-        scanf("%c", &s[a]);
-    
-    if (s[0] == '1')
-        protect++;
-    
-    for (int i = 1 ; i <= n-1 ; i++)
+// [1 2 3 2 4], 5, i=0, currsum=0, target=4, subset, 0
+void subsetSum(int set[], int n, int i, int currSum, int treasure, int subset[], int size) {
+    if (i == n) // reached end
     {
-        int z = i-k+1;
-
-        if (z <= 0)
-            z = 0;
-        
-        if (s[i] == '1')
+        if (currSum == treasure)
         {
-            int b = 0;
-            
-            for (int j = i-1 ; j >= z ; j--)
-            {
-                if (s[j] == '1')
-                    b = 1;
-            }
-            
-            if (b == 0)
-                protect++;
+            for (int j = 0; j < size; j++)
+                printf("%d ", subset[j]);
+            printf("\n");
         }
+        return;
     }
 
-    printf("%d", protect);
+    // Include set[i]
+    subset[size] = set[i];
+    subsetSum(set, n, i + 1, currSum + set[i], treasure, subset, size + 1); // [1 2 3 2 4], 5, i=3, currsum=8, target=4, subset, size=4
+
+    // Exclude set[i]
+    subsetSum(set, n, i + 1, currSum, treasure, subset, size); // [1 2 3 2 4], 5, i=3, currsum=8, target=4, subset, size=4
+}
+
+int main() {
+    int n, treasure;
+    printf("Enter number of elements: ");
+    scanf("%d", &n);
+
+    int set[n];
+    printf("Enter elements: ");
+    for (int i = 0; i < n; i++)
+        scanf("%d", &set[i]);
+
+    printf("Enter target sum: ");
+    scanf("%d", &treasure);
+
+    int subset[n];
+    printf("\nSubsets with sum = %d:\n", treasure);
+    subsetSum(set, n, 0, 0, treasure, subset, 0);
+    return 0;
 }
