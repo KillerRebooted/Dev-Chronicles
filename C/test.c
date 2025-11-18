@@ -1,41 +1,87 @@
 #include <stdio.h>
+#include <math.h>
 
-// [1 2 3 2 4], 5, i=0, currsum=0, target=4, subset, 0
-void subsetSum(int set[], int n, int i, int currSum, int treasure, int subset[], int size) {
-    if (i == n) // reached end
-    {
-        if (currSum == treasure)
-        {
-            for (int j = 0; j < size; j++)
-                printf("%d ", subset[j]);
+int determinant(int n, int arr[n][n], int det) {
+
+    if (n==1)
+        return arr[0][0];
+
+    for (int j=0; j<n; j++) {
+
+        int temp_arr[n-1][n-1];
+
+        int r=0, c=0;
+        for (int k=1; k<n; k++) {
+            for (int l=0; l<n; l++) {
+                if (j==l)
+                    continue;
+                temp_arr[r][c] = arr[k][l];
+                printf("%d ", arr[k][l]);
+                c += 1;
+                c %= n;
+                if (c==0)
+                    r += 1;
+            }
             printf("\n");
         }
-        return;
+
+        det += arr[0][j]*pow(-1, j)*determinant(n-1, temp_arr, 0);
     }
 
-    // Include set[i]
-    subset[size] = set[i];
-    subsetSum(set, n, i + 1, currSum + set[i], treasure, subset, size + 1); // [1 2 3 2 4], 5, i=3, currsum=8, target=4, subset, size=4
+    return det;
 
-    // Exclude set[i]
-    subsetSum(set, n, i + 1, currSum, treasure, subset, size); // [1 2 3 2 4], 5, i=3, currsum=8, target=4, subset, size=4
+}
+
+int cofactor(int n, int arr[n][n]) {
+
+    int co_matrix[n][n];
+
+    for (int i=0; i<n; i++) {
+        for (int j=0; j<n; j++) {
+            int temp_arr[n-1][n-1];
+
+            int r=0, c=0;
+            for (int k=0; k<n; k++) {
+                for (int l=0; l<n; l++) {
+                    if (i==k || j==l)
+                        continue;
+                    temp_arr[r][c] = arr[k][l];
+                    c += 1;
+                    c %= n;
+                    if (c==0)
+                        r += 1;
+                }
+            }
+
+            co_matrix[i][j] = determinant(n-1, temp_arr, 0)*pow(-1, i+j);
+        }
+    }
+
+    printf("\nThe Co-Factor Matrix is:\n");
+    for (int i=0; i<n; i++) {
+        for (int j=0; j<n; j++) {
+            printf("%d ", co_matrix[i][j]);
+        }
+        printf("\n");
+    }
+
 }
 
 int main() {
-    int n, treasure;
-    printf("Enter number of elements: ");
+    int n;
+
+    printf("Enter the Size of the Matrix: ");
     scanf("%d", &n);
 
-    int set[n];
-    printf("Enter elements: ");
-    for (int i = 0; i < n; i++)
-        scanf("%d", &set[i]);
+    int arr[n][n];
 
-    printf("Enter target sum: ");
-    scanf("%d", &treasure);
+    printf("\nEnter the Values for %dx%d Matrix:\n", n, n);
+    for (int i=0; i<n; i++) {
+        for (int j=0; j<n; j++) {
+            scanf("%d", &arr[i][j]);
+        }
+    }
 
-    int subset[n];
-    printf("\nSubsets with sum = %d:\n", treasure);
-    subsetSum(set, n, 0, 0, treasure, subset, 0);
-    return 0;
+    cofactor(n, arr);
+
 }
