@@ -21,4 +21,4 @@ def insult(name):
     return f"{name.upper()}, {insult}"
 
 if __name__ == "__main__":
-    print(insult("Rick Astley"))
+    print(insult("Saanvi"))
