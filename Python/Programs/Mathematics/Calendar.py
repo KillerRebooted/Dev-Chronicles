@@ -1,2 +1,2 @@
 dd, mm, yyyy = list(map(int, input("Enter date (dd mm yyyy): ").split()))
-print(f"The day of the week on {dd}/{mm}/{yyyy} is: {["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][((yyyy-1)%400 + ((yyyy-1)%400)//4 - ((yyyy-1)%400)//100 + sum([3, 0 if ((yyyy%4 == 0 and yyyy%100!= 0) or (yyyy%400==0)) else 1, 3, 2, 3, 2, 3, 3, 2, 3, 2, 3][:mm-1]) + dd)%7]}")
+print(f"The day of the week on {dd}/{mm}/{yyyy} is: {["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][((yyyy-1)%400 + ((yyyy-1)%400)//4 - ((yyyy-1)%400)//100 + sum([3, 1 if ((yyyy%4 == 0 and yyyy%100!= 0) or (yyyy%400==0)) else 0, 3, 2, 3, 2, 3, 3, 2, 3, 2, 3][:mm-1]) + dd)%7]}")
