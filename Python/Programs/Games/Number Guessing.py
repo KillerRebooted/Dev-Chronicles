@@ -34,7 +34,8 @@ while Option == "Invalid Option":
 
 a) 10 : The Computer will Choose a Number from 0-10.
 b) 100 : The Computer will Choose a Number from 0-100.
-c) 1000 : The Computer will Choose a Number from 0-1000.""")
+c) 1000 : The Computer will Choose a Number from 0-1000.
+d) Any Other Number : The Computer will Choose a Number from 1001 to that Number. You will get 15 Tries.""")
 
         sleep(6)
         print()
@@ -69,14 +70,14 @@ if Difficulty == 10:
     sleep(2)
     clear()
 
-if Difficulty == 100:
+elif Difficulty == 100:
 
     Tries = 5
     print("You Chose the Medium Difficulty.")
     sleep(2)
     clear()
 
-if Difficulty == 1000:
+elif Difficulty == 1000:
 
     Tries = 10
     print("You Chose the Nightmare Difficulty. G-", end="\r")
@@ -84,6 +85,21 @@ if Difficulty == 1000:
     print("You Chose the Nightmare Difficulty. G-G-", end="\r")
     sleep(0.5)
     print("You Chose the Nightmare Difficulty. G-G-Good Luck")
+    sleep(2)
+    clear()
+
+else:
+
+    if Difficulty < 1001:
+
+        clear()
+        print("Invalid Option")
+        sleep(1)
+        clear()
+        quit()
+
+    Tries = 15
+    print(f"You Chose {Difficulty} as the Difficulty. Interesting Choice. 15 Tries for you.")
     sleep(2)
     clear()
 
