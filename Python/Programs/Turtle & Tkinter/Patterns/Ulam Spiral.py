@@ -24,7 +24,7 @@ def draw_square_dot(t, size):
     t.penup()
 
 win = Screen()
-win.title("Bulb")
+win.title("Ulam Spiral")
 win.tracer(0)
 
 spiral = Turtle()
