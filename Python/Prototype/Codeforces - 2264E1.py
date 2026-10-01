@@ -1,48 +1,76 @@
-def prime_factorise(num):
-    prime_factors = []
-    test_prime = 2
-    
-    # We only need to check up to the square root of the number
-    while test_prime * test_prime <= num:
-        if num % test_prime == 0:
-            prime_factors.append(test_prime)
-            num //= test_prime
-        else:
-            # If not divisible by 2, skip even numbers. Otherwise, just add 1.
-            test_prime += 1 if test_prime == 2 else 2
-            
-    # If num is greater than 1 at the end, it must be prime itself
-    if num > 1:
-        prime_factors.append(num)
+def sieve_of_eratosthenes(limit):
+    # Smallest Prime Factor (SPF) array initialization
+    spf = [i for i in range(limit + 1)]
+
+    for i in range(2, int(limit**0.5) + 1):
+        if spf[i] == i:
+            # Cross out all multiples of i, starting from i squared
+            for j in range(i * i, limit + 1, i):
+                # Only update if it hasn't already been crossed out by a smaller prime
+                if spf[j] == j:
+                    spf[j] = i
+
+    return spf
+
+def prime_factorise(num, spf=sieve_of_eratosthenes(3000)):
+    prime_factors = set()
+
+    while num != 1:
+        prime_factors.add(spf[num])
+        num //= spf[num]
         
     return prime_factors
 
-def f(b):
+def f(b, dp_cache):
+
+    if b in dp_cache:
+        return dp_cache[b]
+
     if 1 in b:
+        dp_cache[b] = 1
         return 1
     
     if len(b) == 1:
+        dp_cache[b] = b[0]
         return b[0]
 
-    x1 = min(b)
-    x2 = max(b)
+    x1 = b[0]
+    x2 = b[1]
+    x2_factors = set(prime_factorise(x2))
+
+    visited_states = [b]
     uncommon_factors = True
     while uncommon_factors:
 
-        x1_factors = set(prime_factorise(x1))
-        x2_factors = set(prime_factorise(x2))
+        temp = (x1, x2)
 
-        uncommon_factors = x2_factors - x1_factors
+        if temp in dp_cache:
+            final_answer = dp_cache[temp]
+            for state in visited_states:
+                dp_cache[state] = final_answer
+            return final_answer
+
+        visited_states.append(temp)
+        x1_factors = set(prime_factorise(x1))
+
+        uncommon_factors = x1_factors - x2_factors
 
         if uncommon_factors:
-            x2 -= 1
+            x1 -= 1
 
     if x1 == x2:
-        return x1
+        final_answer = x1
+    else:
+        final_answer = f((x1-1, x2-1), dp_cache)
 
-    return f([x1-1, x2-1])
+    for state in visited_states:
+        dp_cache[state] = final_answer
+
+    return final_answer
 
 def main():
+
+    MOD = 998244353
 
     T = int(input())
 
@@ -50,6 +78,7 @@ def main():
         n = int(input())
         a = list(map(int, input().split()))
         f_b_sum = 0
+        dp_cache = {}
 
         count = dict()
         count_size = 0
@@ -61,20 +90,26 @@ def main():
                 count[num] = 1
                 count_size += 1
 
-        count = dict(sorted(count.items()))
+        count = dict(sorted(count.items(), reverse=True))
+        keys = list(count.keys())
 
-        for idx1, i in enumerate(list(count.keys())):
-            f_b_sum += (2**count[i] - 1)*f([i])
-            for idx2, j in enumerate(list(count.keys())[idx1+1:]):
-                b = [i, j]
-                intermediate_counts = [count[x] for x in list(count.keys())[idx1+1:idx1+1+idx2]]
-                permutations = 1
-                for power in intermediate_counts:
-                    permutations *= 2**power
-                permutations *= (2**count[i]-1) * (2**count[j]-1)
-                f_b_sum += permutations*f(b)
+        for idx1, i in enumerate(keys):
 
-        print(f_b_sum%998244353)
+            f_b_sum = (f_b_sum + (pow(2, count[i], MOD) - 1)*f((i, ), dp_cache)) % MOD
+            intermediate_perms = 1
+
+            for idx2, j in enumerate(keys[idx1+1:]):
+                b = (i, j)
+
+                term_i = pow(2, count[i], MOD) - 1
+                term_j = pow(2, count[j], MOD) - 1
+                permutations = (term_i * term_j * intermediate_perms) % MOD
+
+                f_b_sum = (f_b_sum + permutations*f(b, dp_cache)) % MOD
+
+                intermediate_perms = (intermediate_perms * pow(2, count[j], MOD)) % MOD
+
+        print(f_b_sum%MOD)
 
 if __name__ == "__main__":
 
