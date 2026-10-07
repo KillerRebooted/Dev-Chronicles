@@ -65,7 +65,7 @@ def move_disk(win: Screen, disk: Turtle, pole_max_heights: list, transit_height:
     pole_max_heights[poles.index(end)] += delta_height
 
 def An(num):
-    return 2*An(num-1) + 1 if num > 1 else 1
+    return 2**num - 1
 
 def toh(win: Screen, set_tracer_zero: bool, move_counter: Turtle, total_moves: int, moves_completed: list, disk_turtles: list, pole_max_heights: list, transit_height: int, delta_height: int, n: int, start: tuple, mid: tuple, end: tuple, poles: list):
 
@@ -102,9 +102,8 @@ def main(set_tracer_zero: bool, speed: int):
     win.bgcolor(bgcolor:= (20, 25, 40))
     win.tracer(0)
 
-    pole = Turtle()
+    pole = Turtle(visible=False)
     pole.speed(0)
-    pole.hideturtle()
     pole.pu()
     pole.pencolor(get_random_contrast_color(bgcolor))
 
@@ -118,7 +117,7 @@ def main(set_tracer_zero: bool, speed: int):
     pole_height = 400
 
     disk_width_unit = (pole_gap - 20) / n
-    disk_gap = 5
+    disk_gap = 4
     disk_height = (pole_height - (n-1)*disk_gap) / (n + 2)
     
     pole_width = disk_width_unit / 2
@@ -129,10 +128,9 @@ def main(set_tracer_zero: bool, speed: int):
 
     total_moves = An(n)
     moves_completed = [0]
-    move_counter = Turtle()
+    move_counter = Turtle(visible=False)
     move_counter.pencolor(get_random_contrast_color(bgcolor))
     move_counter.pu()
-    move_counter.ht()
     move_counter.goto(0, pole_start_y + pole_height + 100)
     move_counter.write(f"Total Moves: {total_moves:,} | Moves Completed: {moves_completed[0]:,} | Moves Remaining: {total_moves - moves_completed[0]:,}", align="center", font=("Arial", 16, "normal"))
 
@@ -142,13 +140,12 @@ def main(set_tracer_zero: bool, speed: int):
 
     disk_turtles = []
     for i in range(n):
-        disk = Turtle("square")
-        disk.ht()
+        disk = Turtle("square", visible=False)
         color = get_random_contrast_color(bgcolor)
         disk.pencolor(color)
         disk.fillcolor(color)
         disk.speed(speed)
-        disk.shapesize(stretch_wid=disk_height/20, stretch_len=disk_width_unit * (i + 1) / 20, outline=3)
+        disk.shapesize(stretch_wid=disk_height/20, stretch_len=disk_width_unit * (i + 1) / 20, outline=disk_gap/2)
         disk.pu()
 
         disk_turtles.append(disk)
@@ -166,4 +163,6 @@ def main(set_tracer_zero: bool, speed: int):
     done()
 
 if __name__ == "__main__":
+    # set_tracer_zero: True for faster execution, False for slower execution
+    # speed: Speed increases with number. 0 is highest. Affects speed if set_tracer_zero=False
     main(set_tracer_zero=False, speed=8)
