@@ -5,9 +5,16 @@ from Sudoku_From_Image import scan_img
 
 #Tkinter Initiation
 
-win = ctk.CTk(fg_color="#121212")
+win = ctk.CTk(fg_color="#0f172a")
 win.title("Sudoku")
-win.geometry("0x0")
+win.geometry("455x505")
+
+text_color = "#f8fafc"
+fg_color = "#1e293b"
+corner_radius=4
+border_width=1
+border_color="#334155"
+hover_color="#334155"
 
 w = win.winfo_screenwidth()
 h = win.winfo_screenheight()
@@ -20,7 +27,7 @@ def create_widgets():
 
     for r in range(9):
         for c in range(9):
-            butt = ctk.CTkButton(win, text="", width=50, height=50, text_color="#000000", font=("Helvetica", 18, "bold"), fg_color="#FFFFFF", corner_radius=0, border_width=1, border_color="black", hover_color="#6bedbf")
+            butt = ctk.CTkButton(win, text="", width=50, height=50, text_color=text_color, font=("Helvetica", 18, "bold"), fg_color=fg_color, corner_radius=corner_radius, border_width=border_width, border_color=border_color, hover_color=hover_color)
             
             if c%3 == 2:
                 butt.grid(row=r, column=c, padx=(0, 2))
@@ -36,11 +43,31 @@ def create_widgets():
 
             buttons.append(butt)
 
-    solve_button = ctk.CTkButton(win, text="Solve!", width=227, height=50, text_color="#000000", font=("Helvetica", 18, "bold"), fg_color="#FFFFFF", corner_radius=0, border_width=1, border_color="black", hover_color="#6bedbf", command=lambda: solve(sudoku))
-    solve_button.place(x=0, y=454)
+    def toggle_checkbox(btn, fast_solve):
+        fast_solve.set(not fast_solve.get())
 
-    solve_on_screen = ctk.CTkButton(win, text="Solve on Screen", width=227, height=50, text_color="#000000", font=("Helvetica", 18, "bold"), fg_color="#FFFFFF", corner_radius=0, border_width=1, border_color="black", hover_color="#6bedbf", command=lambda: scan_img(sudoku))
-    solve_on_screen.place(x=227, y=454)
+        if fast_solve.get():
+            # Checked state (shows check symbol and active styling)
+            btn.configure(
+                text="☑ Fast Solve"
+            )
+        else:
+            # Unchecked state (shows empty box symbol and normal button styling)
+            btn.configure(
+                text="☐ Fast Solve"
+            )
+
+    total_width = 454
+
+    fast_solve = ctk.IntVar(value=0)
+    checkbox = ctk.CTkButton(win, text="☐ Fast Solve", width=total_width/3, height=50, text_color=text_color, font=("Helvetica", 16, "bold"), fg_color=fg_color, corner_radius=corner_radius, border_width=border_width, border_color=border_color, hover_color=hover_color, command=lambda: toggle_checkbox(checkbox, fast_solve))
+    checkbox.place(x=0, y=454)
+
+    solve_on_screen = ctk.CTkButton(win, text="Solve on Screen", width=total_width/3, height=50, text_color=text_color, font=("Helvetica", 16, "bold"), fg_color=fg_color, corner_radius=corner_radius, border_width=border_width, border_color=border_color, hover_color=hover_color, state="disabled", command=lambda: scan_img(sudoku))
+    solve_on_screen.place(x=total_width*2/3, y=454)
+
+    solve_button = ctk.CTkButton(win, text="Solve!", width=total_width/3, height=50, text_color=text_color, font=("Helvetica", 16, "bold"), fg_color=fg_color, corner_radius=corner_radius, border_width=border_width, border_color=border_color, hover_color=hover_color, command=lambda: solve(sudoku, fast_solve.get(), fast_solve_checkbox=checkbox, solve_button=solve_button, solve_on_screen=solve_on_screen))
+    solve_button.place(x=total_width/3, y=454)
 
     win.update()
 
@@ -188,13 +215,14 @@ def is_valid(puzzle, r, c, guess):
     return True
 
 #Backtracking Solving Algorithm
-def solve(puzzle, first_iter=True):
+def solve(puzzle, fast_solve, first_iter=True, fast_solve_checkbox=None, solve_button=None, solve_on_screen=None):
     global sudoku
 
     if first_iter:
+        fast_solve_checkbox.configure(state="disabled")
+        solve_button.configure(state="disabled")
+        listener.stop()
         puzzle = convert_input(initial_solve(make_simple_sudoku(reverse_convert(sudoku))))
-
-    make_sudoku(puzzle)
 
     row, column = get_next_empty(puzzle)
 
@@ -207,9 +235,12 @@ def solve(puzzle, first_iter=True):
         if is_valid(puzzle, row, column, guess):
             puzzle[row][column] = guess
 
-            make_sudoku(puzzle)
+            if not fast_solve:
+                make_sudoku(puzzle)
 
-            if solve(puzzle, first_iter=False):
+            if solve(puzzle, fast_solve, first_iter=False, solve_on_screen=solve_on_screen):
+                make_sudoku(puzzle)
+                solve_on_screen.configure(state="normal")
                 return True
             
         puzzle[row][column] = -1
@@ -230,25 +261,6 @@ def convert_input(inp):
     return temp_sudoku
 
 #Tkinter Functions
-def center(win, screen_resolution, animation_time):
-
-    x1, y1 = 0, 0
-
-    while x1 != screen_resolution[0] or y1 != screen_resolution[1]:
-
-        if x1 != screen_resolution[0]: x1 += screen_resolution[0]/(animation_time*10)
-        if y1 != screen_resolution[1]: y1 += screen_resolution[1]/(animation_time*10)
-
-        win.geometry(f"{int(x1)}x{int(y1)}")
-
-        x2 = w//2 - win.winfo_width()//2
-        y2 = h//2 - win.winfo_height()//2
-
-        win.geometry(f"+{x2}+{y2}")
-
-        sleep(0.008)
-        win.update()
-
 def make_sudoku(grid):
 
     grid = [[val if val != -1 else " " for val in row] for row in grid]
@@ -282,8 +294,7 @@ def on_press(key, grid):
         pass
 
 def main():
-        
-    center(win, (455, 505), 1)
+    global listener
 
     create_widgets()
 
@@ -296,20 +307,5 @@ def main():
 
 if __name__ == "__main__":
 
-    """sudoku = [
-        [-1,-1, -1,   8, -1, 5,   -1, 1, 3],
-        [-1, -1, -1,   2, -1, 3,   6, -1, -1],
-        [6, -1, -1,   -1, 9, -1,   2, -1, 4],
-
-        [-1, -1, -1,   -1, -1, -1,   -1, -1, 5],
-        [-1, 4, -1,   1, -1, -1,   7, -1, 6],
-        [2, 5, 6,   3, -1, 4,   8, 9, -1],
-
-        [5, 9, -1,   -1, -1, 7,   1, -1, 2],
-        [1, -1, 2,   -1, 8, -1,   4, 7, -1],
-        [-1, -1, 4,   9, 1, -1,   -1, 3, 8]
-    ]"""
-
     sudoku = convert_input(scan_img())
-
     main()
