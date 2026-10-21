@@ -1,0 +1,9 @@
+# IDE settings (matches root and nested .vscode folders)
+.vscode/
+**/ .vscode/
+.vs/
+
+# C/C++ compiled binaries
+*.exe
+*.out
+*.obj
