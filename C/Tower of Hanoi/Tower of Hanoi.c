@@ -1,4 +1,4 @@
-#include<stdio.h>
+#include <stdio.h>
 
 void TOH(int n, int from, int aux, int to) {
     if (n == 1)
