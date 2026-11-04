@@ -355,4 +355,4 @@ if __name__ == "__main__":
     z = interpolate(z, 5)
 
     # Start Fourier epicycle visualization.
-    main(z, speed=0.15)
+    main(z, speed=1.5)
