@@ -22,7 +22,7 @@ def to_fullwidth(lst, reverse=False):
         return [chr(ord(c) - 0xFEE0) if c != " " else c for c in lst]
     return [chr(ord(c) + 0xFEE0) if c != " " else c for c in lst]
 
-flames_dict = {"F":"Friends", "L":"Love", "A":"Affection", "M":"Marriage", "E":"Enemy", "S":"Siblings"}
+flames_dict = {"F":"Friends 🫂", "L":"Love 💏", "A":"Affection 😚", "M":"Marriage 💍", "E":"Enemy 🔪", "S":"Siblings 👨‍👩‍👧‍👦"}
 flames = to_fullwidth(list(flames_dict.keys()))
 
 n1 = list(input("Enter First Name: ").upper().strip())
